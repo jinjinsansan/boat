@@ -9,6 +9,9 @@ import { FeatureComparison } from "@/components/boat/home/FeatureComparison";
 import { ColumnsPreview } from "@/components/boat/home/ColumnsPreview";
 import { RealtimeStatsMock } from "@/components/boat/home/RealtimeStatsMock";
 import { CallToAction } from "@/components/boat/home/CallToAction";
+import { ValuePillars } from "@/components/boat/home/ValuePillars";
+import { DataJourney } from "@/components/boat/home/DataJourney";
+import { BetaRoadmap } from "@/components/boat/home/BetaRoadmap";
 
 export default function HomePage() {
   const races = getMockRaces();
@@ -18,6 +21,12 @@ export default function HomePage() {
   return (
     <>
       <HeroSection />
+
+      <ValuePillars />
+
+      <DataJourney />
+
+      <BetaRoadmap />
 
       <section className="bg-white py-16">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6">
