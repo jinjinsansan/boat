@@ -51,7 +51,7 @@ export function HeaderNav() {
               >
                 <div className="space-y-4">
                   <Link
-                    href="/auth/sign-in"
+                    href="https://boat.dlogicai.in/auth/sign-in"
                     onClick={closeMenu}
                     className="flex w-full items-center justify-between rounded-xl bg-[#0f62fe] px-4 py-3 font-semibold text-white transition-transform hover:-translate-y-0.5"
                   >
