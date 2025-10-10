@@ -2,128 +2,76 @@ import Link from "next/link";
 
 import { ChatSessionList } from "@/components/boat/ChatSessionList";
 import { RaceOverviewGrid } from "@/components/boat/RaceOverviewGrid";
-import { formatDate } from "@/lib/formatters";
 import { getMockChatSessions } from "@/data/mock/chat";
 import { getMockRaces } from "@/data/mock/races";
+import { HeroSection } from "@/components/boat/home/HeroSection";
+import { FeatureComparison } from "@/components/boat/home/FeatureComparison";
+import { ColumnsPreview } from "@/components/boat/home/ColumnsPreview";
+import { RealtimeStatsMock } from "@/components/boat/home/RealtimeStatsMock";
+import { CallToAction } from "@/components/boat/home/CallToAction";
 
 export default function HomePage() {
   const races = getMockRaces();
   const sessions = getMockChatSessions();
-  const metrics = [
-    {
-      label: "登録レース",
-      value: races.length.toString(),
-      description: "モックデータ",
-    },
-    {
-      label: "AI推奨舟券",
-      value: "24件/日",
-      description: "競艇向け実装予定",
-    },
-    {
-      label: "分析エンジン",
-      value: "9",
-      description: "競馬版ロジック流用",
-    },
-    {
-      label: "最新アップデート",
-      value: formatDate("2025-10-10"),
-      description: "モック更新日",
-    },
-  ];
+  // メトリクスはヒーローセクション内でモック表示中。必要に応じて値を更新。
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-16">
-      <section className="grid items-center gap-12 md:grid-cols-2">
-        <div className="space-y-6">
-          <span className="inline-flex items-center rounded-full bg-[var(--brand-secondary)]/15 px-4 py-1 text-sm font-semibold text-[var(--brand-secondary)]">
-            BOAT AI PLATFORM
-          </span>
-          <h1 className="text-4xl font-semibold leading-tight text-[var(--foreground)] md:text-5xl">
-            D-Logic Boat で競艇分析をスマートに
-          </h1>
-          <p className="text-lg text-[var(--muted)]">
-            競馬版で培ったノウハウをそのままに、競艇レース向けのデータ分析体験をホワイトテーマで提供します。
-          </p>
-          <div className="flex flex-wrap gap-3">
+    <>
+      <HeroSection />
+
+      <section className="bg-white py-16">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6">
+          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div className="space-y-2">
+              <span className="text-sm font-semibold uppercase tracking-[0.4em] text-[#3dd6d0]">
+                Featured Races
+              </span>
+              <h2 className="text-3xl font-semibold text-[#0b1533]">注目レース（モック）</h2>
+              <p className="text-sm text-[#4f5d7a]">
+                競馬版のレースダッシュボードを参考に、競艇向けカード UI を配置しています。正式リリース時にはリアルデータが流入します。
+              </p>
+            </div>
             <Link
               href="/races"
-              className="rounded-full bg-[var(--brand-primary)] px-6 py-3 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-transform hover:-translate-y-0.5"
+              className="text-sm font-semibold text-[#0f62fe]"
             >
-              レースを確認
+              すべて見る →
             </Link>
+          </div>
+          <RaceOverviewGrid races={races} />
+        </div>
+      </section>
+
+      <FeatureComparison />
+
+      <section className="bg-white py-16">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6">
+          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div className="space-y-2">
+              <span className="text-sm font-semibold uppercase tracking-[0.4em] text-[#3dd6d0]">
+                AI Chat Logs
+              </span>
+              <h2 className="text-3xl font-semibold text-[#0b1533]">AIチャット最新ログ（モック）</h2>
+              <p className="text-sm text-[#4f5d7a]">
+                競馬版のチャット履歴 UI と同じ形式で、競艇レース向けの分析ログを表示する準備が整っています。
+              </p>
+            </div>
             <Link
               href="/chat"
-              className="rounded-full border border-[var(--border)] px-6 py-3 text-sm font-semibold text-[var(--brand-primary)] transition-colors hover:border-[var(--brand-primary)]"
+              className="text-sm font-semibold text-[#0f62fe]"
             >
-              AIチャットを見る
+              チャットを開く →
             </Link>
           </div>
-        </div>
-        <div className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-8 shadow-[var(--shadow-soft)]">
-          <div className="space-y-4">
-            <p className="text-xs font-semibold tracking-[0.2em] text-[var(--muted)]">
-              PLATFORM SNAPSHOT
-            </p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {metrics.map((item) => (
-                <div
-                  key={item.label}
-                  className="rounded-3xl border border-[var(--border)] bg-white px-6 py-5"
-                >
-                  <p className="text-xs font-medium text-[var(--muted)]">
-                    {item.label}
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold text-[var(--foreground)]">
-                    {item.value}
-                  </p>
-                  <p className="text-xs text-[var(--muted)]">{item.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <ChatSessionList sessions={sessions.slice(0, 4)} />
         </div>
       </section>
 
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold text-[var(--foreground)]">
-              注目レース
-            </h2>
-            <p className="text-sm text-[var(--muted)]">
-              競艇の主要レース情報を、競馬版コンポーネントを元にホワイトテーマで再構成しています。
-            </p>
-          </div>
-          <Link
-            href="/races"
-            className="text-sm font-semibold text-[var(--brand-primary)]"
-          >
-            すべて見る →
-          </Link>
-        </div>
-        <RaceOverviewGrid races={races} />
-      </section>
+      <ColumnsPreview />
 
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold text-[var(--foreground)]">
-              AIチャット最新ログ
-            </h2>
-            <p className="text-sm text-[var(--muted)]">
-              レースごとの AI 分析チャットをモックデータで表示しています。
-            </p>
-          </div>
-          <Link
-            href="/chat"
-            className="text-sm font-semibold text-[var(--brand-primary)]"
-          >
-            チャットを開く →
-          </Link>
-        </div>
-        <ChatSessionList sessions={sessions.slice(0, 4)} />
-      </section>
-    </div>
+      <RealtimeStatsMock />
+
+      <CallToAction />
+    </>
   );
 }
