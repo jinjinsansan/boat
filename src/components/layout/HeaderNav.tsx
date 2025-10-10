@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-import { supabase } from "@/lib/supabaseClient";
+import { getSupabaseClient } from "@/lib/supabaseClient";
 
 export function HeaderNav() {
   const [open, setOpen] = useState(false);
@@ -11,6 +11,7 @@ export function HeaderNav() {
   const toggleMenu = () => setOpen((prev) => !prev);
 
   const handleSignIn = async () => {
+    const supabase = getSupabaseClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
