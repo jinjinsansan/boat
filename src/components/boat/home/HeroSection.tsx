@@ -35,7 +35,7 @@ export function HeroSection() {
 
     const intervalId = window.setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % imageSequence.length);
-    }, 3000);
+    }, 2000);
 
     return () => window.clearInterval(intervalId);
   }, [imageSequence.length]);
@@ -52,8 +52,8 @@ export function HeroSection() {
             style={{ backgroundImage: `url(${src})` }}
           />
         ))}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(16,42,67,0.65),_rgba(11,21,51,0.85))]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#041027]/70 via-[#020717]/80 to-[#01030f]/90" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(16,42,67,0.45),_rgba(11,21,51,0.65))]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#041027]/45 via-[#020717]/55 to-[#01030f]/65" />
       </div>
 
       <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-6 py-24 md:items-start">
