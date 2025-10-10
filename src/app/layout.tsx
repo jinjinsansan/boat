@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { Noto_Sans_JP, Roboto_Mono } from "next/font/google";
 import "./globals.css";
@@ -16,12 +15,6 @@ const robotoMono = Roboto_Mono({
   subsets: ["latin"],
   display: "swap",
 });
-
-const navLinks = [
-  { href: "/", label: "トップ" },
-  { href: "/races", label: "レース一覧" },
-  { href: "/chat", label: "チャット" },
-];
 
 export const metadata: Metadata = {
   title: "D-Logic Boat UI",
@@ -41,40 +34,26 @@ export default function RootLayout({
         className={`min-h-screen bg-[var(--background)] text-[var(--foreground)] ${notoSans.variable} ${robotoMono.variable} antialiased`}
       >
         <div className="flex min-h-screen flex-col">
-          <header className="border-b border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur">
-            <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
-              <Link href="/" className="flex items-center gap-3">
-                <Image
-                  src="/brand-logo.svg"
-                  alt="D-Logic Boat"
-                  width={160}
-                  height={48}
-                  priority
-                />
+          <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--surface)]/90 backdrop-blur">
+            <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4">
+              <Link href="/" className="flex items-center gap-3 text-sm font-semibold tracking-wide text-[#102a43]">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/40 bg-white text-2xl font-black text-[#0f62fe] shadow-[0_10px_30px_rgba(15,40,87,0.12)]">
+                  D
+                </span>
+                <span className="hidden sm:inline">D-Logic Boat</span>
               </Link>
-              <nav className="hidden gap-6 text-sm font-medium text-[var(--muted)] md:flex">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="transition-colors hover:text-[var(--brand-primary)]"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </nav>
+              <button
+                type="button"
+                aria-label="メニューを開く"
+                className="group flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[var(--muted)] shadow-[0_8px_20px_rgba(15,40,87,0.08)] transition-transform hover:-translate-y-0.5"
+              >
+                <span className="relative flex h-4 w-6 items-center justify-center">
+                  <span className="absolute h-0.5 w-full -translate-y-2 rounded-full bg-[var(--foreground)] transition-transform group-hover:-translate-y-2.5" />
+                  <span className="absolute h-0.5 w-full rounded-full bg-[var(--foreground)]" />
+                  <span className="absolute h-0.5 w-full translate-y-2 rounded-full bg-[var(--foreground)] transition-transform group-hover:translate-y-2.5" />
+                </span>
+              </button>
             </div>
-            <nav className="mx-auto flex w-full max-w-6xl gap-4 px-6 pb-4 text-sm font-medium text-[var(--muted)] md:hidden">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="rounded-full border border-[var(--border)] px-4 py-2 text-center transition-colors hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
           </header>
 
           <main className="flex-1 bg-[var(--background)]">{children}</main>
