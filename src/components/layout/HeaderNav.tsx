@@ -3,26 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 
-import { getSupabaseClient } from "@/lib/supabaseClient";
-
 export function HeaderNav() {
   const [open, setOpen] = useState(false);
 
   const toggleMenu = () => setOpen((prev) => !prev);
-
-  const handleSignIn = async () => {
-    const supabase = getSupabaseClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/`,
-      },
-    });
-
-    if (error) {
-      console.error(error);
-    }
-  };
 
   const closeMenu = () => setOpen(false);
 
@@ -63,21 +47,21 @@ export function HeaderNav() {
               />
               <div
                 id="nav-menu"
-                className="absolute right-0 top-12 z-50 w-56 rounded-2xl border border-[var(--border)] bg-white p-4 text-sm shadow-[0_20px_40px_rgba(15,40,87,0.12)]"
+                className="absolute right-0 top-12 z-50 w-60 rounded-2xl border border-[var(--border)] bg-white p-4 text-sm shadow-[0_20px_40px_rgba(15,40,87,0.12)]"
               >
-                <div className="space-y-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      closeMenu();
-                      handleSignIn();
-                    }}
-                    className="w-full rounded-xl bg-[#0f62fe] px-4 py-3 text-left font-semibold text-white transition-transform hover:-translate-y-0.5"
+                <div className="space-y-4">
+                  <Link
+                    href="/auth/sign-in"
+                    onClick={closeMenu}
+                    className="flex w-full items-center justify-between rounded-xl bg-[#0f62fe] px-4 py-3 font-semibold text-white transition-transform hover:-translate-y-0.5"
                   >
-                    Googleでサインイン
-                  </button>
+                    <span>サインイン / 登録</span>
+                    <span aria-hidden className="text-xs">
+                      →
+                    </span>
+                  </Link>
                   <p className="text-xs text-[var(--muted)]">
-                    Google アカウントで競艇版 D-Logic にアクセスできます。
+                    Google アカウントで競艇版 D-Logic へアクセスできます。
                   </p>
                 </div>
               </div>
