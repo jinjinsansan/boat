@@ -70,6 +70,15 @@ async function readKnowledgeSource(): Promise<{ text: string; source: string }>
     return { text, source: absolutePath };
   }
 
+  if (!DEFAULT_KNOWLEDGE_URL.startsWith("http://") && !DEFAULT_KNOWLEDGE_URL.startsWith("https://")) {
+    const absolutePath = path.isAbsolute(DEFAULT_KNOWLEDGE_URL)
+      ? DEFAULT_KNOWLEDGE_URL
+      : path.join(process.cwd(), DEFAULT_KNOWLEDGE_URL);
+
+    const text = await fs.readFile(absolutePath, "utf-8");
+    return { text, source: absolutePath };
+  }
+
   try {
     const text = await fs.readFile(DEFAULT_LOCAL_PATH, "utf-8");
     return { text, source: DEFAULT_LOCAL_PATH };
