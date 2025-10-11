@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_JP, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { HeaderNav } from "@/components/layout/HeaderNav";
+import { Toaster } from "react-hot-toast";
 
 const notoSans = Noto_Sans_JP({
   variable: "--font-noto-sans-jp",
@@ -36,7 +37,10 @@ export default function RootLayout({
         <div className="flex min-h-screen flex-col">
           <HeaderNav />
 
-          <main className="flex-1 bg-[var(--background)]">{children}</main>
+          <main className="flex-1 bg-[var(--background)]">
+            {children}
+            <Toaster position="top-right" toastOptions={{ duration: 2500 }} />
+          </main>
 
           <footer className="border-t border-[var(--border)] bg-[var(--surface)]">
             <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-6 py-6 text-sm text-[var(--muted)] md:flex-row md:items-center md:justify-between">

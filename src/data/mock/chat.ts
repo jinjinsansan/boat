@@ -131,3 +131,15 @@ export function saveUserChatSessions(sessions: ChatSession[]): void {
     console.warn("[chat] Failed to save chat sessions", error);
   }
 }
+
+export function upsertUserChatSession(session: ChatSession): void {
+  if (!isBrowser()) return;
+  const current = loadUserChatSessions();
+  const map = new Map<string, ChatSession>();
+  current.forEach((item) => {
+    map.set(item.id, item);
+  });
+  map.set(session.id, session);
+  const updated = Array.from(map.values()).sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
+  saveUserChatSessions(updated);
+}

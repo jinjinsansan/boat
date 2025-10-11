@@ -8,6 +8,7 @@ export interface BoatRaceEntry {
   motorNo: number;
   motorWinRate: number;
   boatNo: number;
+  boatWinRate: number;
   startTiming: string;
   abilityScore: number;
 }
