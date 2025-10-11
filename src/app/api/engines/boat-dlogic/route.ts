@@ -5,6 +5,8 @@ import {
   type BoatRaceContext,
 } from "@/lib/boatEngine";
 
+export const runtime = "nodejs";
+
 interface EngineRequestBody {
   raceId?: string;
   raceDate?: string;
@@ -27,6 +29,7 @@ function isParticipant(value: unknown): value is BoatParticipantInput {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as EngineRequestBody;
+    console.log("[boat-dlogic] request body", body);
 
     if (!body || typeof body !== "object") {
       return NextResponse.json(
