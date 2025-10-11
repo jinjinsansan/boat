@@ -1,23 +1,64 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
+import { nanoid } from 'nanoid/non-secure';
 
 import { ChatSessionList } from '@/components/boat/ChatSessionList';
 import { ChatInterface } from '@/components/boat/chat/ChatInterface';
 import { RaceSelector } from '@/components/boat/chat/RaceSelector';
-import { getMockChatSessions } from '@/data/mock/chat';
+import {
+  getMockChatSessions,
+  loadUserChatSessions,
+  saveUserChatSessions,
+} from '@/data/mock/chat';
 import { getMockRaces } from '@/data/mock/races';
 import type { BoatRaceDetail } from '@/types/race';
+import type { ChatSession } from '@/types/chat';
 
 type Step = 'race-select' | 'chat';
 
 export default function ChatLobbyPage() {
   const races = useMemo(() => getMockRaces(), []);
-  const sessions = useMemo(() => getMockChatSessions(), []);
+  const baseSessions = useMemo(() => getMockChatSessions(), []);
+  const [userSessions, setUserSessions] = useState<ChatSession[]>([]);
   const [step, setStep] = useState<Step>('race-select');
   const [selectedRace, setSelectedRace] = useState<BoatRaceDetail | null>(null);
   const selectorRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    setUserSessions(loadUserChatSessions());
+  }, []);
+
+  const sessions = useMemo(() => {
+    const map = new Map<string, ChatSession>();
+    [...userSessions, ...baseSessions].forEach((session) => {
+      map.set(session.id, session);
+    });
+    return Array.from(map.values()).sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
+  }, [userSessions, baseSessions]);
+
+  const handleCreateSession = (race: BoatRaceDetail) => {
+    const now = new Date().toISOString();
+    const newSession: ChatSession = {
+      id: `boat-${nanoid(10)}`,
+      raceId: race.id,
+      raceTitle: `${race.venue} ${race.title}`,
+      createdAt: now,
+      updatedAt: now,
+      summary: `${race.venue}${race.day}日目 ${race.grade} を分析するチャット`,
+      messages: [],
+    };
+
+    const updatedUserSessions = [newSession, ...userSessions];
+    setUserSessions(updatedUserSessions);
+    saveUserChatSessions(updatedUserSessions);
+    setSelectedRace(race);
+    setStep('chat');
+    router.push(`/chat/${newSession.id}`);
+  };
 
   const existingSession = useMemo(() => {
     if (!selectedRace) return undefined;
@@ -80,10 +121,7 @@ export default function ChatLobbyPage() {
         <div ref={selectorRef}>
           <RaceSelector
             races={races}
-            onSelect={(race) => {
-              setSelectedRace(race);
-              setStep('chat');
-            }}
+            onSelect={(race) => handleCreateSession(race)}
           />
         </div>
       )}

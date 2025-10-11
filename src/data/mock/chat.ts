@@ -103,3 +103,31 @@ export function createMockAssistantMessage(prompt: string): ChatMessage {
     createdAt: new Date().toISOString(),
   };
 }
+
+const STORAGE_KEY = "boat-chat-sessions";
+
+function isBrowser(): boolean {
+  return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+}
+
+export function loadUserChatSessions(): ChatSession[] {
+  if (!isBrowser()) return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as ChatSession[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.warn("[chat] Failed to parse stored chat sessions", error);
+    return [];
+  }
+}
+
+export function saveUserChatSessions(sessions: ChatSession[]): void {
+  if (!isBrowser()) return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+  } catch (error) {
+    console.warn("[chat] Failed to save chat sessions", error);
+  }
+}
