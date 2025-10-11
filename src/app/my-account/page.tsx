@@ -19,15 +19,15 @@ type ActiveTab = "profile" | "referral" | "chats" | "points" | "settings";
 
 export default function MyAccountPage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, loading, error } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>("profile");
   const [userPoints, setUserPoints] = useState<number>(0);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && !error) {
       router.push("/auth/sign-in");
     }
-  }, [loading, user, router]);
+  }, [loading, user, error, router]);
 
   const handleSignOut = async () => {
     const supabase = getSupabaseClient();
@@ -41,6 +41,36 @@ export default function MyAccountPage() {
         <div className="text-center">
           <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-[#0f62fe] border-r-transparent"></div>
           <p className="mt-4 text-sm text-[#4f5d7a]">読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center max-w-md p-6">
+          <div className="text-red-500 mb-4">
+            <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-[#102a43] mb-2">認証エラー</h2>
+          <p className="text-sm text-[#4f5d7a] mb-4">{error}</p>
+          <div className="space-y-2">
+            <Link
+              href="/auth/sign-in"
+              className="block w-full rounded-full bg-[#0f62fe] px-6 py-3 text-sm font-semibold text-white hover:bg-[#0353e9] transition-colors"
+            >
+              サインインページへ
+            </Link>
+            <Link
+              href="/"
+              className="block w-full rounded-full border border-[#dfe7fb] bg-white px-6 py-3 text-sm font-semibold text-[#4f5d7a] hover:bg-[#f5f8ff] transition-colors"
+            >
+              ホームへ戻る
+            </Link>
+          </div>
         </div>
       </div>
     );
