@@ -77,12 +77,12 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
     if (!session || !race) return null;
     return (
       <header className="space-y-2">
-        <p className="text-xs uppercase tracking-wide text-[#B7BDC6]">Boat Chat Session</p>
-        <h1 className="text-3xl font-semibold text-white">{session.raceTitle}</h1>
-        <p className="text-sm text-[#848E9C]">{session.summary}</p>
+        <p className="text-xs uppercase tracking-wide text-[var(--muted)]">Boat Chat Session</p>
+        <h1 className="text-3xl font-semibold text-[var(--foreground)]">{session.raceTitle}</h1>
+        <p className="text-sm text-[var(--muted)]">{session.summary}</p>
         <Link
           href={`/races/${race.id}`}
-          className="text-xs font-semibold text-[#F0B90B]"
+          className="text-xs font-semibold text-[var(--brand-primary)]"
         >
           対象レースを見る →
         </Link>
@@ -92,7 +92,7 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center bg-[#0B0E11] text-sm text-[#B7BDC6]">
+      <div className="flex min-h-[60vh] items-center justify-center bg-[var(--background)] text-sm text-[var(--muted)]">
         読み込み中...
       </div>
     );
@@ -100,13 +100,13 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
 
   if (!session || !race || !sessionId) {
     return (
-      <div className="bg-[#0B0E11] py-16">
-        <div className="mx-auto max-w-4xl rounded-2xl border border-[#2B3139] bg-[#181A20] p-8 text-sm text-[#B7BDC6]">
+      <div className="bg-[var(--background)] py-16">
+        <div className="mx-auto max-w-4xl rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-8 text-sm text-[var(--muted)] shadow-sm">
           指定されたチャットセッションが見つかりませんでした。
           <button
             type="button"
             onClick={() => router.push('/chat')}
-            className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#F0B90B] px-4 py-2 text-sm font-semibold text-black"
+            className="mt-4 inline-flex items-center gap-2 rounded-full bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0d4fce]"
           >
             チャット一覧へ戻る
           </button>
@@ -116,16 +116,16 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
   }
 
   return (
-    <div className="bg-[#0B0E11] py-12 text-white">
+    <div className="bg-[var(--background)] py-12 text-[var(--foreground)]">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
         {headerContent}
 
-        <section className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#2B3139] bg-[#181A20] px-6 py-4 text-xs text-[#B7BDC6]">
+        <section className="flex flex-wrap items-center gap-3 rounded-3xl border border-[var(--border)] bg-[var(--surface)] px-6 py-4 text-xs text-[var(--muted)] shadow-sm">
           <button
             type="button"
             onClick={() => setStep('settings')}
             className={`rounded-full px-4 py-2 transition ${
-              step === 'settings' ? 'bg-[#F0B90B] text-black font-semibold' : 'bg-[#0B0E11] text-white'
+              step === 'settings' ? 'bg-[var(--brand-primary)] text-white font-semibold' : 'bg-[var(--background)] text-[var(--foreground)]'
             }`}
           >
             1. IMLogic 設定
@@ -136,10 +136,10 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
             onClick={() => settings && setStep('chat')}
             className={`rounded-full px-4 py-2 transition ${
               step === 'chat'
-                ? 'bg-[#F0B90B] text-black font-semibold'
+                ? 'bg-[var(--brand-primary)] text-white font-semibold'
                 : settings
-                  ? 'bg-[#0B0E11] text-white'
-                  : 'bg-[#0B0E11] text-[#4f5665] cursor-not-allowed'
+                  ? 'bg-[var(--background)] text-[var(--foreground)]'
+                  : 'bg-[var(--background)] text-[#aab4c5] cursor-not-allowed'
             }`}
             disabled={!settings}
           >
@@ -149,7 +149,7 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
 
         {step === 'settings' && (
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-            <div className="rounded-2xl border border-[#2B3139] bg-[#181A20] p-6">
+            <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
               <IMLogicSettings
                 raceName={race.title}
                 onComplete={(value) => {

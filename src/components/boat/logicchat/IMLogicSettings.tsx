@@ -66,15 +66,18 @@ export function IMLogicSettings({ onComplete, raceName }: IMLogicSettingsProps) 
   const applyWeightDistribution = useCallback((ids: Set<WeightItem['id']>) => {
     if (ids.size === 0) return settings.item_weights;
     const base = 100 / ids.size;
+    const selectedList = Array.from(ids);
     const result = { ...settings.item_weights };
-    WEIGHT_ITEMS.forEach((item, index) => {
-      if (ids.has(item.id)) {
-        const value = index === ids.size - 1 ? 100 - base * (ids.size - 1) : base;
-        result[item.id] = parseFloat(value.toFixed(2));
-      } else {
-        result[item.id] = 0;
-      }
+
+    WEIGHT_ITEMS.forEach((item) => {
+      result[item.id] = 0;
     });
+
+    selectedList.forEach((id, index) => {
+      const value = index === selectedList.length - 1 ? 100 - base * (selectedList.length - 1) : base;
+      result[id] = parseFloat(value.toFixed(2));
+    });
+
     return result;
   }, [settings.item_weights]);
 
@@ -90,10 +93,12 @@ export function IMLogicSettings({ onComplete, raceName }: IMLogicSettingsProps) 
       } else {
         next.add(id);
       }
+
       setSettings((current) => ({
         ...current,
         item_weights: applyWeightDistribution(next),
       }));
+
       return next;
     });
   }, [applyWeightDistribution]);
@@ -175,20 +180,23 @@ export function IMLogicSettings({ onComplete, raceName }: IMLogicSettingsProps) 
 
   return (
     <div className="space-y-8">
-      <div className="rounded-2xl border border-[#2B3139] bg-[#181A20] p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-wide text-[#B7BDC6]">ステップ 2</p>
-            <h2 className="text-2xl font-semibold text-white">{raceName ?? 'カスタムエンジン設定'}</h2>
-            <p className="mt-1 text-sm text-[#848E9C]">
-              馬(艇)と選手の比率・着目項目を調整し、チャットに適用してください。
+            <p className="text-xs uppercase tracking-wide text-[var(--muted)]">ステップ 2</p>
+            <h2 className="text-2xl font-semibold text-[var(--foreground)]">{raceName ?? 'カスタムエンジン設定'}</h2>
+            <p className="mt-1 text-sm text-[var(--muted)]">
+              競馬版と同じロジックで艇・選手の比率と評価項目を調整できます。
             </p>
           </div>
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => setSettings(createSettings())}
-              className="inline-flex items-center gap-2 rounded-lg border border-[#2B3139] px-4 py-2 text-sm text-[#EAECEF] transition hover:bg-[#2B3139]"
+              onClick={() => {
+                setSelectedItems(new Set(WEIGHT_ITEMS.map((item) => item.id)));
+                setSettings(createSettings());
+              }}
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--muted)] transition hover:bg-[var(--background)]"
             >
               <RefreshCw className="h-4 w-4" /> リセット
             </button>
@@ -196,7 +204,7 @@ export function IMLogicSettings({ onComplete, raceName }: IMLogicSettingsProps) 
               type="button"
               onClick={handleSave}
               disabled={!isValid || saving}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#F0B90B] px-4 py-2 text-sm font-semibold text-black transition hover:bg-[#FCD535] disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0d4fce] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Save className="h-4 w-4" /> 適用
             </button>
@@ -204,37 +212,37 @@ export function IMLogicSettings({ onComplete, raceName }: IMLogicSettingsProps) 
         </div>
       </div>
 
-      <section className="rounded-2xl border border-[#2B3139] bg-[#181A20] p-6">
+      <section className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 text-sm font-semibold text-white">
-            <Sparkles className="h-4 w-4 text-[#F0B90B]" /> プリセット
+          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--foreground)]">
+            <Sparkles className="h-4 w-4 text-[var(--brand-primary)]" /> プリセット
           </div>
           <div className="flex flex-wrap gap-2 text-xs">
             <button
               type="button"
               onClick={() => handlePreset('balanced')}
-              className="rounded-lg bg-[#2B3139] px-3 py-2 text-[#EAECEF] transition hover:bg-[#3C434B]"
+              className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-[var(--foreground)] transition hover:border-[var(--brand-primary)]"
             >
               バランス
             </button>
             <button
               type="button"
               onClick={() => handlePreset('attack')}
-              className="rounded-lg bg-[#2B3139] px-3 py-2 text-[#EAECEF] transition hover:bg-[#3C434B]"
+              className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-[var(--foreground)] transition hover:border-[var(--brand-primary)]"
             >
               攻め重視
             </button>
             <button
               type="button"
               onClick={() => handlePreset('stability')}
-              className="rounded-lg bg-[#2B3139] px-3 py-2 text-[#EAECEF] transition hover:bg-[#3C434B]"
+              className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-[var(--foreground)] transition hover:border-[var(--brand-primary)]"
             >
               安定重視
             </button>
             <button
               type="button"
               onClick={() => handlePreset('jockey')}
-              className="rounded-lg bg-[#2B3139] px-3 py-2 text-[#EAECEF] transition hover:bg-[#3C434B]"
+              className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-[var(--foreground)] transition hover:border-[var(--brand-primary)]"
             >
               選手重視
             </button>
@@ -242,23 +250,23 @@ export function IMLogicSettings({ onComplete, raceName }: IMLogicSettingsProps) 
         </div>
       </section>
 
-      <section className="rounded-2xl border border-[#2B3139] bg-[#181A20] p-6 text-[#EAECEF]">
+      <section className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-semibold text-[#B7BDC6]">艇・選手の比率</p>
-            <div className="mt-3 flex items-center gap-4">
+            <p className="text-sm font-semibold text-[var(--muted)]">艇・選手の比率</p>
+            <div className="mt-3 flex items-center gap-6">
               <div className="flex flex-col items-center gap-1">
-                <span className="text-xs text-[#848E9C]">艇</span>
-                <span className="text-2xl font-semibold text-[#F0B90B]">{settings.horse_weight}%</span>
+                <span className="text-xs text-[var(--muted)]">艇</span>
+                <span className="text-3xl font-semibold text-[var(--brand-primary)]">{settings.horse_weight}%</span>
               </div>
-              <div className="h-10 w-px bg-[#2B3139]" />
+              <div className="h-10 w-px bg-[var(--border)]" />
               <div className="flex flex-col items-center gap-1">
-                <span className="text-xs text-[#848E9C]">選手</span>
-                <span className="text-2xl font-semibold text-[#F0B90B]">{settings.jockey_weight}%</span>
+                <span className="text-xs text-[var(--muted)]">選手</span>
+                <span className="text-3xl font-semibold text-[var(--brand-primary)]">{settings.jockey_weight}%</span>
               </div>
             </div>
           </div>
-          <div className="flex gap-3 text-xs text-[#B7BDC6]">
+          <div className="flex gap-3 text-xs text-[var(--muted)]">
             <button
               type="button"
               onClick={() =>
@@ -268,7 +276,7 @@ export function IMLogicSettings({ onComplete, raceName }: IMLogicSettingsProps) 
                   jockey_weight: Math.max(0, current.jockey_weight - 5),
                 }))
               }
-              className="rounded-lg border border-[#2B3139] px-3 py-2 transition hover:bg-[#2B3139]"
+              className="rounded-lg border border-[var(--border)] px-3 py-2 transition hover:border-[var(--brand-primary)]"
             >
               馬(艇)比率 +5%
             </button>
@@ -281,7 +289,7 @@ export function IMLogicSettings({ onComplete, raceName }: IMLogicSettingsProps) 
                   jockey_weight: Math.min(100, current.jockey_weight + 5),
                 }))
               }
-              className="rounded-lg border border-[#2B3139] px-3 py-2 transition hover:bg-[#2B3139]"
+              className="rounded-lg border border-[var(--border)] px-3 py-2 transition hover:border-[var(--brand-primary)]"
             >
               選手比率 +5%
             </button>
@@ -290,8 +298,8 @@ export function IMLogicSettings({ onComplete, raceName }: IMLogicSettingsProps) 
       </section>
 
       <section className="space-y-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-white">
-          <Info className="h-4 w-4 text-[#F0B90B]" /> 着目項目を選択
+        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--foreground)]">
+          <Info className="h-4 w-4 text-[var(--brand-primary)]" /> 着目項目を選択
         </div>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {WEIGHT_ITEMS.map((item) => {
@@ -302,28 +310,28 @@ export function IMLogicSettings({ onComplete, raceName }: IMLogicSettingsProps) 
                 type="button"
                 key={item.id}
                 onClick={() => handleToggleItem(item.id)}
-                className={`flex h-full flex-col gap-2 rounded-xl border px-4 py-4 text-left transition ${
+                className={`flex h-full flex-col gap-2 rounded-2xl border px-4 py-4 text-left transition ${
                   checked
-                    ? 'border-[#F0B90B] bg-[#2B3139]'
-                    : 'border-[#2B3139] bg-[#181A20] hover:border-[#3C434B]'
+                    ? 'border-[var(--brand-primary)] bg-[var(--surface)] shadow-[var(--shadow-soft)]'
+                    : 'border-[var(--border)] bg-[var(--surface)] hover:border-[var(--brand-primary)]'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-white">{item.label}</p>
+                  <p className="text-sm font-semibold text-[var(--foreground)]">{item.label}</p>
                   {checked ? (
-                    <CheckCircle2 className="h-4 w-4 text-[#F0B90B]" />
+                    <CheckCircle2 className="h-4 w-4 text-[var(--brand-primary)]" />
                   ) : (
-                    <div className="h-3 w-3 rounded-full border border-[#3C434B]" />
+                    <div className="h-3 w-3 rounded-full border border-[var(--border)]" />
                   )}
                 </div>
-                <p className="text-xs text-[#B7BDC6]">{item.description}</p>
-                <p className="text-xs text-[#F0B90B]">配分 {value.toFixed(1)}%</p>
+                <p className="text-xs text-[var(--muted)]">{item.description}</p>
+                <p className="text-xs text-[var(--brand-primary)]">配分 {value.toFixed(1)}%</p>
               </button>
             );
           })}
         </div>
         {!isValid && (
-          <p className="text-xs text-[#f87171]">配分の合計が100%になるよう調整してください（現在 {total.toFixed(2)}%）。</p>
+          <p className="text-xs text-rose-500">配分の合計が100%になるよう調整してください（現在 {total.toFixed(2)}%）。</p>
         )}
       </section>
     </div>

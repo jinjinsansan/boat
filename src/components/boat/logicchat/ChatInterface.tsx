@@ -148,28 +148,28 @@ export function ChatInterface({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-      <div className="flex h-full flex-col gap-6 rounded-2xl border border-[#2B3139] bg-[#181A20] p-6">
+      <div className="flex h-full flex-col gap-6 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
         <header className="space-y-3">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-[#B7BDC6]">
-            <Triangle className="h-4 w-4 text-[#F0B90B]" /> Boat IMLogic Chat
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-[var(--muted)]">
+            <Triangle className="h-4 w-4 text-[var(--brand-primary)]" /> Boat IMLogic Chat
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-2xl font-semibold text-white">リアルタイム分析チャット</h2>
-              <p className="text-sm text-[#848E9C]">
+              <h2 className="text-2xl font-semibold text-[var(--foreground)]">リアルタイム分析チャット</h2>
+              <p className="text-sm text-[var(--muted)]">
                 競馬版 UX を踏襲した 3 ステップ体験です。プリセットや自由入力で展開を検討しましょう。
               </p>
             </div>
-            <div className="flex items-center gap-2 rounded-full bg-[#0B0E11] px-4 py-1.5 text-xs text-[#B7BDC6]">
-              <Zap className="h-3.5 w-3.5 text-[#F0B90B]" /> セッション ID: {sessionId}
+            <div className="flex items-center gap-2 rounded-full bg-[var(--background)] px-4 py-1.5 text-xs text-[var(--muted)]">
+              <Zap className="h-3.5 w-3.5 text-[var(--brand-primary)]" /> セッション ID: {sessionId}
             </div>
           </div>
-          <div className="flex gap-2 rounded-full bg-[#0B0E11] p-1 text-sm text-[#B7BDC6]">
+          <div className="flex gap-2 rounded-full bg-[var(--background)] p-1 text-sm text-[var(--muted)]">
             <button
               type="button"
               onClick={() => setActiveTab('imlogic')}
               className={`flex-1 rounded-full px-4 py-2 transition ${
-                activeTab === 'imlogic' ? 'bg-[#F0B90B] text-black font-semibold' : 'hover:text-white'
+                activeTab === 'imlogic' ? 'bg-[var(--brand-primary)] text-white font-semibold' : 'hover:text-[var(--foreground)]'
               }`}
             >
               IMLogic
@@ -178,7 +178,7 @@ export function ChatInterface({
               type="button"
               onClick={() => setActiveTab('viewlogic')}
               className={`flex-1 rounded-full px-4 py-2 transition ${
-                activeTab === 'viewlogic' ? 'bg-[#F0B90B] text-black font-semibold' : 'hover:text-white'
+                activeTab === 'viewlogic' ? 'bg-[var(--brand-primary)] text-white font-semibold' : 'hover:text-[var(--foreground)]'
               }`}
             >
               ViewLogic
@@ -186,9 +186,9 @@ export function ChatInterface({
           </div>
         </header>
 
-        <section className="rounded-2xl border border-[#2B3139] bg-[#0B0E11] p-5">
-          <div className="flex flex-wrap items-center gap-2 text-sm text-[#B7BDC6]">
-            <Sparkles className="h-4 w-4 text-[#F0B90B]" /> プリセット分析
+        <section className="rounded-2xl border border-[var(--border)] bg-[var(--background)] p-5">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--muted)]">
+            <Sparkles className="h-4 w-4 text-[var(--brand-primary)]" /> プリセット分析
           </div>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {PRESET_MESSAGES.map((preset) => (
@@ -197,7 +197,7 @@ export function ChatInterface({
                 key={preset}
                 onClick={() => sendMessage(preset, true)}
                 disabled={pending}
-                className="rounded-xl border border-[#2B3139] bg-[#181A20] px-4 py-3 text-left text-sm text-[#EAECEF] transition hover:border-[#F0B90B] disabled:opacity-60"
+                className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-left text-sm text-[var(--foreground)] transition hover:border-[var(--brand-primary)] disabled:opacity-60"
               >
                 {preset}
               </button>
@@ -205,21 +205,21 @@ export function ChatInterface({
           </div>
         </section>
 
-        <section className="flex-1 rounded-2xl border border-[#2B3139] bg-[#0B0E11]">
-          <div className="h-full overflow-y-auto px-6 py-6 text-sm text-[#EAECEF]">
+        <section className="flex-1 rounded-2xl border border-[var(--border)] bg-[var(--surface)]">
+          <div className="h-full overflow-y-auto px-6 py-6 text-sm text-[var(--foreground)]">
             <div className="space-y-6">
               {messages.map((message) => (
                 <div key={message.id} className="flex flex-col gap-2">
                   <div
                     className={`max-w-[80%] rounded-2xl px-4 py-3 leading-relaxed ${
                       message.role === 'assistant'
-                        ? 'self-start bg-[#181A20] text-[#EAECEF]'
-                        : 'self-end bg-[#F0B90B] text-black'
+                        ? 'self-start border border-[var(--border)] bg-white text-[var(--foreground)] shadow-sm'
+                        : 'self-end bg-[var(--brand-primary)] text-white'
                     }`}
                   >
                     <p>{message.content}</p>
                   </div>
-                  <span className="text-[10px] uppercase tracking-wide text-[#848E9C]">
+                  <span className="text-[10px] uppercase tracking-wide text-[var(--muted)]">
                     {message.role === 'assistant' ? 'D-Logic Boat' : 'You'} • {new Date(message.createdAt).toLocaleTimeString('ja-JP', {
                       hour: '2-digit',
                       minute: '2-digit',
@@ -228,8 +228,8 @@ export function ChatInterface({
                 </div>
               ))}
               {pending && (
-                <div className="flex items-center gap-2 text-xs text-[#B7BDC6]">
-                  <Loader2 className="h-4 w-4 animate-spin text-[#F0B90B]" /> 回答を生成しています...
+                <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
+                  <Loader2 className="h-4 w-4 animate-spin text-[var(--brand-primary)]" /> 回答を生成しています...
                 </div>
               )}
               <div ref={bottomRef} />
@@ -238,7 +238,7 @@ export function ChatInterface({
         </section>
 
         <form
-          className="flex flex-col gap-3 rounded-2xl border border-[#2B3139] bg-[#0B0E11] p-4"
+          className="flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--background)] p-4"
           onSubmit={(event) => {
             event.preventDefault();
             sendMessage(input);
@@ -249,14 +249,14 @@ export function ChatInterface({
             onChange={(event) => setInput(event.target.value)}
             placeholder={placeholder}
             rows={3}
-            className="w-full resize-none rounded-xl border border-[#2B3139] bg-[#181A20] px-4 py-3 text-sm text-[#EAECEF] focus:border-[#F0B90B] focus:outline-none"
+            className="w-full resize-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--foreground)] focus:border-[var(--brand-primary)] focus:outline-none"
           />
-          <div className="flex items-center justify-between text-xs text-[#848E9C]">
+          <div className="flex items-center justify-between text-xs text-[var(--muted)]">
             <span>エンジン連携の準備中はモック回答を返します。</span>
             <button
               type="submit"
               disabled={pending || input.trim() === ''}
-              className="inline-flex items-center gap-2 rounded-full bg-[#F0B90B] px-5 py-2 text-sm font-semibold text-black transition hover:bg-[#FCD535] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-primary)] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#0d4fce] disabled:cursor-not-allowed disabled:opacity-60"
             >
               送信 <SendHorizonal className="h-4 w-4" />
             </button>
