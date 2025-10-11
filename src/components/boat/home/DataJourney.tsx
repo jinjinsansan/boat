@@ -18,7 +18,7 @@ const steps = [
 
 export function DataJourney() {
   return (
-    <section className="bg-[#f4f6fb] py-16">
+    <section id="journey" className="bg-[#f4f6fb] py-16">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
         <div className="text-center">
           <span className="text-sm font-semibold uppercase tracking-[0.4em] text-[#0f62fe]">

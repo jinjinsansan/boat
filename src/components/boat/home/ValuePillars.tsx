@@ -21,7 +21,7 @@ const pillars = [
 
 export function ValuePillars() {
   return (
-    <section className="bg-white py-16">
+    <section id="value" className="bg-white py-16">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
         <div className="text-center">
           <span className="text-sm font-semibold uppercase tracking-[0.4em] text-[#3dd6d0]">

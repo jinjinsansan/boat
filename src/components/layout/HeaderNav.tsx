@@ -1,10 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export function HeaderNav() {
   const [open, setOpen] = useState(false);
+  const [renderMenu, setRenderMenu] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setRenderMenu(true);
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+
+    const timeout = window.setTimeout(() => setRenderMenu(false), 280);
+    document.body.style.overflow = "";
+    return () => window.clearTimeout(timeout);
+  }, [open]);
 
   const toggleMenu = () => setOpen((prev) => !prev);
 
@@ -38,34 +53,66 @@ export function HeaderNav() {
               <span className="absolute h-0.5 w-full translate-y-2 rounded-full bg-[var(--foreground)] transition-transform group-hover:translate-y-2.5" />
             </span>
           </button>
-          {open && (
-            <>
+          {renderMenu && (
+            <div className="fixed inset-0 z-50">
               <div
                 role="presentation"
-                className="fixed inset-0 z-40"
+                className={`absolute inset-0 bg-[var(--background)]/70 backdrop-blur transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0"}`}
                 onClick={closeMenu}
               />
-              <div
+              <aside
                 id="nav-menu"
-                className="absolute right-0 top-12 z-50 w-60 rounded-2xl border border-[var(--border)] bg-white p-4 text-sm shadow-[0_20px_40px_rgba(15,40,87,0.12)]"
+                aria-hidden={!open}
+                className={`absolute right-0 top-0 flex h-full w-full max-w-sm flex-col justify-between bg-white/95 text-left shadow-[0_25px_60px_rgba(9,12,38,0.18)] transition-transform duration-300 ease-out ${open ? "translate-x-0" : "translate-x-full"}`}
               >
-                <div className="space-y-4">
-                  <Link
-                    href="https://boat.dlogicai.in/auth/sign-in"
+                <div className="flex items-center justify-between border-b border-[var(--border)] px-6 py-5">
+                  <p className="text-xs font-semibold tracking-[0.35em] text-[#4f5d7a]">MENU</p>
+                  <button
+                    type="button"
                     onClick={closeMenu}
-                    className="flex w-full items-center justify-between rounded-xl bg-[#0f62fe] px-4 py-3 font-semibold text-white transition-transform hover:-translate-y-0.5"
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-sm font-semibold text-[var(--foreground)] transition-transform hover:-translate-y-0.5"
+                    aria-label="メニューを閉じる"
                   >
-                    <span>サインイン / 登録</span>
-                    <span aria-hidden className="text-xs">
-                      →
-                    </span>
-                  </Link>
-                  <p className="text-xs text-[var(--muted)]">
-                    Google アカウントで競艇版 D-Logic へアクセスできます。
-                  </p>
+                    ×
+                  </button>
                 </div>
-              </div>
-            </>
+
+                <nav className="flex-1 space-y-6 overflow-y-auto px-6 py-8 text-base">
+                  <div className="space-y-3 text-[var(--foreground)]">
+                    <Link href="#value" onClick={closeMenu} className="block rounded-xl border border-transparent px-4 py-3 font-semibold hover:border-[#0f62fe]/30 hover:bg-[#e6f0ff]">
+                      Value Propositions
+                    </Link>
+                    <Link href="#journey" onClick={closeMenu} className="block rounded-xl border border-transparent px-4 py-3 font-semibold hover:border-[#0f62fe]/30 hover:bg-[#e6f0ff]">
+                      Data Journey
+                    </Link>
+                    <Link href="#roadmap" onClick={closeMenu} className="block rounded-xl border border-transparent px-4 py-3 font-semibold hover:border-[#0f62fe]/30 hover:bg-[#e6f0ff]">
+                      Beta Roadmap
+                    </Link>
+                  </div>
+
+                  <div className="space-y-4 rounded-2xl border border-[#d5dff4] bg-[#f8fbff] p-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#3dd6d0]">
+                      Early Access
+                    </p>
+                    <p className="text-sm text-[#4f5d7a]">
+                      Google サインインでクローズドβへ参加しましょう。
+                    </p>
+                    <Link
+                      href="https://boat.dlogicai.in/auth/sign-in"
+                      onClick={closeMenu}
+                      className="flex items-center justify-between rounded-xl bg-[#0f62fe] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(15,40,87,0.25)] transition-transform hover:-translate-y-0.5"
+                    >
+                      <span>サインイン / 登録</span>
+                      <span aria-hidden className="text-xs">→</span>
+                    </Link>
+                  </div>
+                </nav>
+
+                <div className="border-t border-[var(--border)] px-6 py-6">
+                  <p className="text-[11px] uppercase tracking-[0.4em] text-[#8892a6]">© D-Logic 2025</p>
+                </div>
+              </aside>
+            </div>
           )}
         </div>
       </div>
