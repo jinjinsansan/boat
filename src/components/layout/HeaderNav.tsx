@@ -70,20 +70,20 @@ export function HeaderNav() {
   }, [closeMenu, menuMounted, menuVisible]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--surface)]/90 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3">
-        <Link
-          href="/"
-          className="flex items-center gap-3 text-sm font-semibold tracking-wide text-[#102a43]"
-        >
-          <span className="flex h-10 w-10 items-center justify-center border border-[#0f62fe]/80 bg-white text-xl font-black text-[#0f62fe] shadow-[0_8px_20px_rgba(15,40,87,0.12)]">
-            D
-          </span>
-          <span className="hidden sm:inline text-xs font-semibold tracking-[0.3em] text-[#4f5d7a]">
-            競艇AI D-Logic Boat
-          </span>
-        </Link>
-        <div className="relative">
+    <>
+      <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--surface)]/90 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3">
+          <Link
+            href="/"
+            className="flex items-center gap-3 text-sm font-semibold tracking-wide text-[#102a43]"
+          >
+            <span className="flex h-10 w-10 items-center justify-center border border-[#0f62fe]/80 bg-white text-xl font-black text-[#0f62fe] shadow-[0_8px_20px_rgba(15,40,87,0.12)]">
+              D
+            </span>
+            <span className="hidden sm:inline text-xs font-semibold tracking-[0.3em] text-[#4f5d7a]">
+              競艇AI D-Logic Boat
+            </span>
+          </Link>
           <button
             type="button"
             aria-expanded={menuVisible}
@@ -97,8 +97,10 @@ export function HeaderNav() {
               <span className="absolute h-0.5 w-full translate-y-2 rounded-full bg-[var(--foreground)] transition-transform group-hover:translate-y-2.5" />
             </span>
           </button>
-          {menuMounted && (
-            <div className="fixed inset-0 z-50">
+        </div>
+      </header>
+      {menuMounted && (
+            <div className="fixed inset-0 z-[9999]">
               <div
                 role="presentation"
                 className={`absolute inset-0 bg-[#040717]/70 backdrop-blur-md transition-opacity duration-300 ${menuVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}
@@ -107,7 +109,7 @@ export function HeaderNav() {
               <aside
                 id="nav-menu"
                 aria-hidden={!menuVisible}
-                className={`absolute right-0 top-0 flex h-full w-full max-w-[420px] flex-col overflow-hidden justify-between bg-gradient-to-b from-white/98 via-white/95 to-white/92 text-left shadow-[0_25px_60px_rgba(9,12,38,0.25)] transition-transform duration-300 ease-out ${menuVisible ? "translate-x-0" : "translate-x-full"}`}
+                className={`fixed right-0 top-0 flex h-screen w-full max-w-[420px] flex-col justify-between bg-gradient-to-b from-white/98 via-white/95 to-white/92 text-left shadow-[0_25px_60px_rgba(9,12,38,0.25)] transition-transform duration-300 ease-out ${menuVisible ? "translate-x-0" : "translate-x-full"}`}
               >
                 <div className="flex items-center justify-between border-b border-white/60 px-7 py-6">
                   <div className="flex flex-col gap-1">
@@ -161,9 +163,7 @@ export function HeaderNav() {
                 </div>
               </aside>
             </div>
-          )}
-        </div>
-      </div>
-    </header>
+      )}
+    </>
   );
 }
