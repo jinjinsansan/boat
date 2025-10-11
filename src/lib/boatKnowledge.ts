@@ -23,15 +23,18 @@ export interface BoatKnowledgeEntry {
   release_year?: number;
   release_month?: number;
   release_term?: string;
-  metrics_primary_raw: string[];
   metrics_primary: Array<number | null>;
-  metrics_secondary_raw: string[];
   metrics_secondary: Array<number | null>;
-  metrics_secondary_suffix?: string;
   birthplace?: string;
+}
+
+type BoatKnowledgeRawEntry = BoatKnowledgeEntry & {
+  metrics_primary_raw?: string[];
+  metrics_secondary_raw?: string[];
+  metrics_secondary_suffix?: string;
   raw_line?: string;
   text?: string;
-}
+};
 
 export interface BoatKnowledgeIndex {
   entriesByRegister: Map<string, BoatKnowledgeEntry>;
@@ -105,8 +108,24 @@ function parseKnowledge(text: string, source: string): BoatKnowledgeIndex {
     if (!trimmed) continue;
 
     try {
-      const record = JSON.parse(trimmed) as BoatKnowledgeEntry;
-      if (!record || !record.register_number) continue;
+      const parsed = JSON.parse(trimmed) as BoatKnowledgeRawEntry;
+      if (!parsed || !parsed.register_number) continue;
+
+      const record: BoatKnowledgeEntry = {
+        source: parsed.source,
+        register_number: parsed.register_number,
+        name_kanji: parsed.name_kanji,
+        name_kana: parsed.name_kana,
+        branch: parsed.branch,
+        grade: parsed.grade,
+        profile_code: parsed.profile_code,
+        release_year: parsed.release_year,
+        release_month: parsed.release_month,
+        release_term: parsed.release_term,
+        metrics_primary: parsed.metrics_primary ?? [],
+        metrics_secondary: parsed.metrics_secondary ?? [],
+        birthplace: parsed.birthplace,
+      };
 
       entriesByRegister.set(record.register_number, record);
 
