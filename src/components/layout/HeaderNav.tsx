@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
+
+const ADMIN_EMAILS = ["goldbenchan@gmail.com", "kusanokiyoshi1@gmail.com"];
 
 const primaryLinks = [
   { href: "#value", label: "Value Propositions" },
@@ -12,8 +15,11 @@ const primaryLinks = [
 ];
 
 export function HeaderNav() {
+  const { user } = useAuth();
   const [menuMounted, setMenuMounted] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
+  
+  const isAdmin = user && ADMIN_EMAILS.includes(user.email || "");
 
   const openMenu = useCallback(() => {
     if (menuVisible) return;
@@ -139,6 +145,15 @@ export function HeaderNav() {
                         {item.label}
                       </Link>
                     ))}
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        onClick={closeMenu}
+                        className="block rounded-2xl border border-[#0f62fe]/40 bg-gradient-to-r from-[#e6f0ff] to-[#f5f8ff] px-5 py-4 text-sm font-semibold text-[#0f62fe] no-underline transition hover:border-[#0f62fe] hover:from-[#d6e8ff] hover:to-[#e6f0ff]"
+                      >
+                        🛡️ 管理者パネル
+                      </Link>
+                    )}
                   </div>
 
                   <div className="space-y-4 rounded-3xl border border-[#d5dff4] bg-[#f5f8ff] p-6 shadow-[0_20px_45px_rgba(13,28,63,0.12)]">
