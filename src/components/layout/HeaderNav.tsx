@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
 const primaryLinks = [
@@ -14,24 +14,27 @@ export function HeaderNav() {
   const [menuMounted, setMenuMounted] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
 
-  const openMenu = () => {
+  const openMenu = useCallback(() => {
     if (menuVisible) return;
     setMenuMounted(true);
     requestAnimationFrame(() => setMenuVisible(true));
-  };
+  }, [menuVisible]);
 
-  const closeMenu = () => {
-    if (!menuVisible) return;
+  const closeMenu = useCallback(() => {
+    if (!menuVisible) {
+      setMenuMounted(false);
+      return;
+    }
     setMenuVisible(false);
-  };
+  }, [menuVisible]);
 
-  const toggleMenu = () => {
+  const toggleMenu = useCallback(() => {
     if (menuVisible) {
       closeMenu();
     } else {
       openMenu();
     }
-  };
+  }, [closeMenu, menuVisible, openMenu]);
 
   useEffect(() => {
     if (!menuMounted) {
@@ -39,18 +42,32 @@ export function HeaderNav() {
     }
 
     if (menuVisible) {
-      const previousOverflow = document.body.style.overflow;
-      document.body.dataset.locked = "true";
-      document.body.style.overflow = "hidden";
+      const html = document.documentElement;
+      const body = document.body;
+      const previousHtmlOverflow = html.style.overflow;
+      const previousBodyOverflow = body.style.overflow;
+
+      html.style.overflow = "hidden";
+      body.style.overflow = "hidden";
+
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Escape") {
+          closeMenu();
+        }
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+
       return () => {
-        document.body.style.overflow = previousOverflow;
-        delete document.body.dataset.locked;
+        window.removeEventListener("keydown", handleKeyDown);
+        html.style.overflow = previousHtmlOverflow;
+        body.style.overflow = previousBodyOverflow;
       };
     }
 
     const timer = window.setTimeout(() => setMenuMounted(false), 320);
     return () => window.clearTimeout(timer);
-  }, [menuMounted, menuVisible]);
+  }, [closeMenu, menuMounted, menuVisible]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--surface)]/90 backdrop-blur">
@@ -90,7 +107,7 @@ export function HeaderNav() {
               <aside
                 id="nav-menu"
                 aria-hidden={!menuVisible}
-                className={`absolute right-0 top-0 flex h-full w-full max-w-[420px] flex-col justify-between bg-gradient-to-b from-white/98 via-white/95 to-white/92 text-left shadow-[0_25px_60px_rgba(9,12,38,0.25)] transition-transform duration-300 ease-out ${menuVisible ? "translate-x-0" : "translate-x-full"}`}
+                className={`absolute right-0 top-0 flex h-full w-full max-w-[420px] flex-col overflow-hidden justify-between bg-gradient-to-b from-white/98 via-white/95 to-white/92 text-left shadow-[0_25px_60px_rgba(9,12,38,0.25)] transition-transform duration-300 ease-out ${menuVisible ? "translate-x-0" : "translate-x-full"}`}
               >
                 <div className="flex items-center justify-between border-b border-white/60 px-7 py-6">
                   <div className="flex flex-col gap-1">
@@ -107,14 +124,14 @@ export function HeaderNav() {
                   </button>
                 </div>
 
-                <nav className="flex-1 space-y-8 overflow-y-auto px-7 py-10 text-base">
+                <nav className="flex-1 space-y-8 overflow-y-auto overscroll-contain px-7 py-10 text-base">
                   <div className="space-y-3 text-[var(--foreground)]">
                     {primaryLinks.map((item) => (
                       <Link
                         key={item.href}
                         href={item.href}
                         onClick={closeMenu}
-                        className="block rounded-2xl border border-transparent bg-white/40 px-5 py-4 text-sm font-semibold text-[#0b1533] no-underline transition hover:border-[#0f62fe]/40 hover:bg-[#e6f0ff] hover:text-[#0f62fe]"
+                        className="block rounded-2xl border border-transparent bg-white/60 px-5 py-4 text-sm font-semibold text-[#0b1533] no-underline transition hover:border-[#0f62fe]/40 hover:bg-[#e6f0ff] hover:text-[#0f62fe]"
                       >
                         {item.label}
                       </Link>
