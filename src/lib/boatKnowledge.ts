@@ -1,6 +1,9 @@
 import fs from "fs/promises";
 import path from "path";
 
+const DEFAULT_CACHE_PATH = path.join("/tmp", "boat_knowledge_cache.jsonl");
+const DEFAULT_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
 const DEFAULT_KNOWLEDGE_URL =
   process.env.BOAT_KNOWLEDGE_URL ??
   "https://pub-059afaafefa84116b57d57e0a72b81bd.r2.dev/boat_race_2020_2025.jsonl";
@@ -49,6 +52,34 @@ export interface BoatKnowledgeIndex {
 
 let knowledgePromise: Promise<BoatKnowledgeIndex> | null = null;
 
+function resolvePath(value: string): string {
+  return path.isAbsolute(value) ? value : path.join(process.cwd(), value);
+}
+
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function ensureDirectory(filePath: string): Promise<void> {
+  const dir = path.dirname(filePath);
+  await fs.mkdir(dir, { recursive: true });
+}
+
+async function isCacheValid(cachePath: string, ttlMs: number): Promise<boolean> {
+  try {
+    const stat = await fs.stat(cachePath);
+    const age = Date.now() - stat.mtimeMs;
+    return age < ttlMs;
+  } catch {
+    return false;
+  }
+}
+
 function normaliseName(value: string | undefined | null): string {
   if (!value) return "";
   return value
@@ -62,47 +93,63 @@ async function readKnowledgeSource(): Promise<{ text: string; source: string }>
 {
   if (process.env.BOAT_KNOWLEDGE_SOURCE?.trim()) {
     const customPath = process.env.BOAT_KNOWLEDGE_SOURCE.trim();
-    const absolutePath = path.isAbsolute(customPath)
-      ? customPath
-      : path.join(process.cwd(), customPath);
+    const absolutePath = resolvePath(customPath);
 
     const text = await fs.readFile(absolutePath, "utf-8");
     return { text, source: absolutePath };
   }
 
   if (!DEFAULT_KNOWLEDGE_URL.startsWith("http://") && !DEFAULT_KNOWLEDGE_URL.startsWith("https://")) {
-    const absolutePath = path.isAbsolute(DEFAULT_KNOWLEDGE_URL)
-      ? DEFAULT_KNOWLEDGE_URL
-      : path.join(process.cwd(), DEFAULT_KNOWLEDGE_URL);
+    const absolutePath = resolvePath(DEFAULT_KNOWLEDGE_URL);
 
     const text = await fs.readFile(absolutePath, "utf-8");
     return { text, source: absolutePath };
   }
 
+  const cachePath = resolvePath(
+    process.env.BOAT_KNOWLEDGE_CACHE_PATH?.trim() || DEFAULT_CACHE_PATH,
+  );
+  const cacheTtlMs = Number(process.env.BOAT_KNOWLEDGE_CACHE_TTL_MS ?? DEFAULT_CACHE_TTL_MS);
+
+  if (await isCacheValid(cachePath, cacheTtlMs)) {
+    const text = await fs.readFile(cachePath, "utf-8");
+    return { text, source: cachePath };
+  }
+
   try {
-    const text = await fs.readFile(DEFAULT_LOCAL_PATH, "utf-8");
-    return { text, source: DEFAULT_LOCAL_PATH };
-  } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(
-        `[boatKnowledge] Local knowledge file not found at ${DEFAULT_LOCAL_PATH}: ${error}`,
+    const response = await fetch(DEFAULT_KNOWLEDGE_URL, { cache: "no-store" });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to download boat knowledge: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const text = await response.text();
+    try {
+      await ensureDirectory(cachePath);
+      await fs.writeFile(cachePath, text, "utf-8");
+    } catch (error) {
+      console.warn(`[boatKnowledge] Failed to persist cache at ${cachePath}: ${error}`);
+    }
+
+    return { text, source: cachePath };
+  } catch (downloadError) {
+    console.warn(`[boatKnowledge] CDN download failed: ${downloadError}`);
+    if (await fileExists(cachePath)) {
+      const text = await fs.readFile(cachePath, "utf-8");
+      return { text, source: cachePath };
+    }
+
+    try {
+      const text = await fs.readFile(DEFAULT_LOCAL_PATH, "utf-8");
+      return { text, source: DEFAULT_LOCAL_PATH };
+    } catch (localError) {
+      throw new Error(
+        `[boatKnowledge] Unable to load knowledge file. CDN error: ${downloadError}. Local fallback error: ${localError}`,
       );
     }
   }
-
-  // Fallback to remote CDN fetch
-  const response = await fetch(DEFAULT_KNOWLEDGE_URL, {
-    cache: "force-cache",
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to download boat knowledge: ${response.status} ${response.statusText}`,
-    );
-  }
-
-  const text = await response.text();
-  return { text, source: DEFAULT_KNOWLEDGE_URL };
 }
 
 function parseKnowledge(text: string, source: string): BoatKnowledgeIndex {
