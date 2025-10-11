@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { nanoid } from 'nanoid/non-secure';
-import { Loader2, SendHorizonal, Sparkles, Triangle, Zap } from 'lucide-react';
+import { Loader2, SendHorizonal, Sparkles } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 import type { ChatMessage } from '@/types/chat';
@@ -15,6 +15,7 @@ interface ChatInterfaceProps {
   settings?: IMLogicSettingsData | null;
   initialMessages?: ChatMessage[];
   onMessagesUpdate?: (messages: ChatMessage[]) => void;
+  isPanelOpen?: boolean;
 }
 
 const PRESET_MESSAGES = [
@@ -44,6 +45,7 @@ export function ChatInterface({
   settings,
   initialMessages,
   onMessagesUpdate,
+  isPanelOpen = false,
 }: ChatInterfaceProps) {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
@@ -147,44 +149,27 @@ export function ChatInterface({
   }, [messages, race, settings]);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-      <div className="flex h-full flex-col gap-6 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-        <header className="space-y-3">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-[var(--muted)]">
-            <Triangle className="h-4 w-4 text-[var(--brand-primary)]" /> Boat IMLogic Chat
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-2xl font-semibold text-[var(--foreground)]">リアルタイム分析チャット</h2>
-              <p className="text-sm text-[var(--muted)]">
-                競馬版 UX を踏襲した 3 ステップ体験です。プリセットや自由入力で展開を検討しましょう。
-              </p>
-            </div>
-            <div className="flex items-center gap-2 rounded-full bg-[var(--background)] px-4 py-1.5 text-xs text-[var(--muted)]">
-              <Zap className="h-3.5 w-3.5 text-[var(--brand-primary)]" /> セッション ID: {sessionId}
-            </div>
-          </div>
-          <div className="flex gap-2 rounded-full bg-[var(--background)] p-1 text-sm text-[var(--muted)]">
-            <button
-              type="button"
-              onClick={() => setActiveTab('imlogic')}
-              className={`flex-1 rounded-full px-4 py-2 transition ${
-                activeTab === 'imlogic' ? 'bg-[var(--brand-primary)] text-white font-semibold' : 'hover:text-[var(--foreground)]'
-              }`}
-            >
-              IMLogic
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('viewlogic')}
-              className={`flex-1 rounded-full px-4 py-2 transition ${
-                activeTab === 'viewlogic' ? 'bg-[var(--brand-primary)] text-white font-semibold' : 'hover:text-[var(--foreground)]'
-              }`}
-            >
-              ViewLogic
-            </button>
-          </div>
-        </header>
+    <div className="flex flex-col h-full">
+      <div className="flex gap-2 rounded-full bg-[var(--background)] p-1 text-sm text-[var(--muted)] mb-4">
+        <button
+          type="button"
+          onClick={() => setActiveTab('imlogic')}
+          className={`flex-1 rounded-full px-4 py-2 transition ${
+            activeTab === 'imlogic' ? 'bg-[var(--brand-primary)] text-white font-semibold' : 'hover:text-[var(--foreground)]'
+          }`}
+        >
+          IMLogic
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('viewlogic')}
+          className={`flex-1 rounded-full px-4 py-2 transition ${
+            activeTab === 'viewlogic' ? 'bg-[var(--brand-primary)] text-white font-semibold' : 'hover:text-[var(--foreground)]'
+          }`}
+        >
+          ViewLogic
+        </button>
+      </div>
 
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--background)] p-5">
           <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--muted)]">
@@ -205,7 +190,9 @@ export function ChatInterface({
           </div>
         </section>
 
-        <section className="flex-1 rounded-2xl border border-[var(--border)] bg-[var(--surface)]">
+        <section className={`flex-1 rounded-2xl border border-[var(--border)] bg-[var(--surface)] transition-all duration-300 ${
+          isPanelOpen ? 'lg:pr-96' : 'lg:pr-4'
+        }`}>
           <div className="h-full overflow-y-auto px-6 py-6 text-sm text-[var(--foreground)]">
             <div className="space-y-6">
               {messages.map((message) => (
@@ -262,7 +249,6 @@ export function ChatInterface({
             </button>
           </div>
         </form>
-      </div>
     </div>
   );
 }

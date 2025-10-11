@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { ChatInterface } from '@/components/boat/logicchat/ChatInterface';
-import { IMLogicSettings } from '@/components/boat/logicchat/IMLogicSettings';
+import IMLogicSettings from '@/components/boat/logicchat/IMLogicSettings';
 import { RaceInfoPanel } from '@/components/boat/logicchat/RaceInfoPanel';
 import {
   getMockChatSessionById,
@@ -31,6 +31,7 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [step, setStep] = useState<Step>('settings');
   const [settings, setSettings] = useState<IMLogicSettingsData | null>(null);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -116,64 +117,71 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
   }
 
   return (
-    <div className="bg-[var(--background)] py-12 text-[var(--foreground)]">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
-        {headerContent}
+    <div className="bg-[var(--background)] min-h-screen text-[var(--foreground)]">
+      <RaceInfoPanel race={race} onPanelStateChange={setIsPanelOpen} />
 
-        <section className="flex flex-wrap items-center gap-3 rounded-3xl border border-[var(--border)] bg-[var(--surface)] px-6 py-4 text-xs text-[var(--muted)] shadow-sm">
-          <button
-            type="button"
-            onClick={() => setStep('settings')}
-            className={`rounded-full px-4 py-2 transition ${
-              step === 'settings' ? 'bg-[var(--brand-primary)] text-white font-semibold' : 'bg-[var(--background)] text-[var(--foreground)]'
-            }`}
-          >
-            1. IMLogic 設定
-          </button>
-          <span>→</span>
-          <button
-            type="button"
-            onClick={() => settings && setStep('chat')}
-            className={`rounded-full px-4 py-2 transition ${
-              step === 'chat'
-                ? 'bg-[var(--brand-primary)] text-white font-semibold'
-                : settings
-                  ? 'bg-[var(--background)] text-[var(--foreground)]'
-                  : 'bg-[var(--background)] text-[#aab4c5] cursor-not-allowed'
-            }`}
-            disabled={!settings}
-          >
-            2. チャット分析
-          </button>
-        </section>
+      <div className="sticky top-[64px] z-30 bg-[var(--surface)] backdrop-blur-lg shadow-lg border-b border-[var(--border)]">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-center space-x-2">
+            <button
+              onClick={() => setStep('settings')}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-all hover:bg-[var(--background)] ${
+                step === 'settings'
+                  ? 'bg-[var(--brand-primary)] text-white font-semibold'
+                  : 'text-[var(--muted)] hover:text-[var(--foreground)]'
+              }`}
+            >
+              <span className="text-sm font-medium">1. 設定</span>
+            </button>
+            <span className="text-[var(--muted)]">→</span>
+            <button
+              onClick={() => settings && setStep('chat')}
+              disabled={!settings}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-all hover:bg-[var(--background)] ${
+                step === 'chat'
+                  ? 'bg-[var(--brand-primary)] text-white font-semibold'
+                  : settings
+                    ? 'text-[var(--muted)] hover:text-[var(--foreground)]'
+                    : 'text-[#aab4c5] cursor-not-allowed'
+              }`}
+            >
+              <span className="text-sm font-medium">2. 分析</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
-        {step === 'settings' && (
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-            <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+      <div className="container mx-auto px-4 py-8">
+        <div className={`transition-all duration-300 ${isPanelOpen ? 'lg:mr-96' : ''}`}>
+          {headerContent && <div className="mb-8">{headerContent}</div>}
+
+          {step === 'settings' && (
+            <div className="bg-[var(--surface)] rounded-2xl shadow-xl border border-[var(--border)] p-8">
               <IMLogicSettings
-                raceName={race.title}
-                onComplete={(value) => {
+                raceInfo={race}
+                onComplete={(value: IMLogicSettingsData) => {
                   setSettings(value);
                   setStep('chat');
                 }}
               />
             </div>
-            <RaceInfoPanel race={race} />
-          </div>
-        )}
+          )}
 
-        {step === 'chat' && (
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-            <ChatInterface
-              sessionId={sessionId}
-              race={race}
-              settings={settings}
-              initialMessages={session.messages}
-              onMessagesUpdate={handleMessagesUpdate}
-            />
-            <RaceInfoPanel race={race} />
-          </div>
-        )}
+          {step === 'chat' && (
+            <div className="bg-[var(--surface)] rounded-2xl shadow-xl border border-[var(--border)] overflow-hidden">
+              <div className="h-[calc(100vh-240px)]">
+                <ChatInterface
+                  sessionId={sessionId}
+                  race={race}
+                  settings={settings}
+                  initialMessages={session.messages}
+                  onMessagesUpdate={handleMessagesUpdate}
+                  isPanelOpen={isPanelOpen}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
