@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { Plus } from 'lucide-react';
 
 import { ChatSessionList } from '@/components/boat/ChatSessionList';
 import { ChatInterface } from '@/components/boat/chat/ChatInterface';
@@ -16,6 +17,7 @@ export default function ChatLobbyPage() {
   const sessions = useMemo(() => getMockChatSessions(), []);
   const [step, setStep] = useState<Step>('race-select');
   const [selectedRace, setSelectedRace] = useState<BoatRaceDetail | null>(null);
+  const selectorRef = useRef<HTMLDivElement | null>(null);
 
   const existingSession = useMemo(() => {
     if (!selectedRace) return undefined;
@@ -31,6 +33,19 @@ export default function ChatLobbyPage() {
           競馬版で構築したレース→チャットのフローを競艇版に移植したモックです。レースを選択すると参加選手のデータを添えてチャットが生成されます。
         </p>
       </header>
+
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => {
+            setStep('race-select');
+            selectorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }}
+          className="inline-flex items-center gap-2 rounded-[var(--radius-md)] bg-[var(--brand-primary)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0d4fce]"
+        >
+          <Plus size={16} /> 新しいチャットを作成
+        </button>
+      </div>
 
       <section className="flex items-center justify-center gap-4 rounded-[var(--radius-lg)] border border-[var(--border)] bg-white px-6 py-4 text-sm font-semibold text-[var(--muted)]">
         <button
@@ -62,13 +77,15 @@ export default function ChatLobbyPage() {
       </section>
 
       {step === 'race-select' && (
-        <RaceSelector
-          races={races}
-          onSelect={(race) => {
-            setSelectedRace(race);
-            setStep('chat');
-          }}
-        />
+        <div ref={selectorRef}>
+          <RaceSelector
+            races={races}
+            onSelect={(race) => {
+              setSelectedRace(race);
+              setStep('chat');
+            }}
+          />
+        </div>
       )}
 
       {step === 'chat' && selectedRace && (
