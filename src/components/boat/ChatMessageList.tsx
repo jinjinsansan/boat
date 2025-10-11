@@ -1,4 +1,4 @@
-import type { ChatMessageMock } from "@/types/race";
+import type { ChatMessage } from "@/types/chat";
 
 const timeFormatter = new Intl.DateTimeFormat("ja-JP", {
   hour: "2-digit",
@@ -6,7 +6,7 @@ const timeFormatter = new Intl.DateTimeFormat("ja-JP", {
 });
 
 interface ChatMessageListProps {
-  messages: ChatMessageMock[];
+  messages: ChatMessage[];
 }
 
 export function ChatMessageList({ messages }: ChatMessageListProps) {
@@ -18,7 +18,7 @@ export function ChatMessageList({ messages }: ChatMessageListProps) {
           className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-white px-5 py-4 shadow-sm"
         >
           <div className="flex items-center justify-between text-xs font-semibold text-[var(--muted)]">
-            <span>{message.author === "ai" ? "AI" : "ユーザー"}</span>
+            <span>{message.role === "assistant" ? "AI" : "ユーザー"}</span>
             <span>{timeFormatter.format(new Date(message.createdAt))}</span>
           </div>
           <p className="mt-2 text-sm text-[var(--foreground)]">{message.content}</p>

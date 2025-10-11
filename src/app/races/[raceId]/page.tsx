@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { RaceEntryTable } from "@/components/boat/RaceEntryTable";
@@ -19,6 +20,15 @@ export default async function RaceDetailPage({
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8 px-6 py-12">
       <RaceMetaPanel race={race} />
+
+      <div>
+        <Link
+          href={`/chat`}
+          className="inline-flex items-center gap-2 rounded-[var(--radius-md)] bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0d4fce]"
+        >
+          このレースでチャットを作成 →
+        </Link>
+      </div>
 
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-[var(--foreground)]">出走表（モック）</h2>

@@ -3,6 +3,7 @@ export type RaceGrade = "SG" | "G1" | "G2" | "G3" | "一般";
 export interface BoatRaceEntry {
   lane: number;
   racerName: string;
+  registerNumber: string;
   branch: string;
   motorNo: number;
   motorWinRate: number;
@@ -29,19 +30,4 @@ export interface BoatRaceDetail extends BoatRaceSummary {
   description: string;
   entries: BoatRaceEntry[];
   notes: string[];
-}
-
-export interface ChatSessionSummary {
-  id: string;
-  raceId: string;
-  title: string;
-  updatedAt: string;
-  highlight: string;
-}
-
-export interface ChatMessageMock {
-  id: string;
-  author: "user" | "ai";
-  content: string;
-  createdAt: string;
 }

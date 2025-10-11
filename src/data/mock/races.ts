@@ -4,7 +4,7 @@ import type {
   BoatRaceSummary,
 } from "@/types/race";
 
-const baseEntries: BoatRaceEntry[] = [
+const baseEntryTemplates: Omit<BoatRaceEntry, "registerNumber">[] = [
   {
     lane: 1,
     racerName: "峰 竜太",
@@ -67,6 +67,13 @@ const baseEntries: BoatRaceEntry[] = [
   },
 ];
 
+function createRaceEntries(seed: number): BoatRaceEntry[] {
+  return baseEntryTemplates.map((entry, index) => ({
+    ...entry,
+    registerNumber: String(seed + index).padStart(4, "0"),
+  }));
+}
+
 export const mockRaceSummaries: BoatRaceSummary[] = [
   {
     id: "naruto-20251010-g1",
@@ -110,11 +117,11 @@ export const mockRaceSummaries: BoatRaceSummary[] = [
 ];
 
 export const mockRaceDetails: BoatRaceDetail[] = mockRaceSummaries.map(
-  (race) => ({
+  (race, index) => ({
     ...race,
     description:
       "競艇版D-Logicのプレースホルダーです。実際のデータ連携時には、公式サイトから取得したレース情報を表示します。",
-    entries: baseEntries,
+    entries: createRaceEntries(3300 + index * 10),
     notes: [
       "スタート展示の進入状況を表示予定",
       "AI が算出した展開指数・信頼度を合わせて表示",
@@ -129,4 +136,9 @@ export function getMockRaces(): BoatRaceSummary[] {
 
 export function getMockRaceById(raceId: string): BoatRaceDetail | undefined {
   return mockRaceDetails.find((race) => race.id === raceId);
+}
+
+export function getParticipantsByRaceId(raceId: string): BoatRaceEntry[] {
+  const race = getMockRaceById(raceId);
+  return race ? race.entries : [];
 }

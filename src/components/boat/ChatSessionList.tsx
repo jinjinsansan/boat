@@ -1,8 +1,8 @@
-import type { ChatSessionSummary } from "@/types/race";
+import type { ChatSession } from "@/types/chat";
 import { ChatSessionCard } from "./ChatSessionCard";
 
 interface ChatSessionListProps {
-  sessions: ChatSessionSummary[];
+  sessions: ChatSession[];
 }
 
 export function ChatSessionList({ sessions }: ChatSessionListProps) {
