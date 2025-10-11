@@ -40,7 +40,6 @@ const createUserMessage = (content: string): ChatMessage => ({
 });
 
 export function ChatInterface({
-  sessionId,
   race,
   settings,
   initialMessages,

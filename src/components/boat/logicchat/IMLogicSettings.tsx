@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import {
   Save,
@@ -27,7 +27,6 @@ import { IMLogicSettingsData } from '@/types/logicchat';
 
 interface Props {
   onComplete: (settings: IMLogicSettingsData) => void;
-  raceInfo?: any;
 }
 
 interface ItemConfig {
@@ -158,20 +157,9 @@ const distributeWeights = (selected: Set<ItemId>): IMLogicSettingsData['item_wei
   return weights;
 };
 
-const deriveSelectionFromWeights = (weights?: IMLogicSettingsData['item_weights']): ItemId[] => {
-  if (!weights) {
-    return ALL_ITEM_IDS;
-  }
 
-  const selected = ITEM_CONFIGS.map((item) => item.id).filter((id) => {
-    const value = weights[id];
-    return typeof value === 'number' && value > 0.0001;
-  });
 
-  return selected.length > 0 ? selected : ALL_ITEM_IDS;
-};
-
-export default function IMLogicSettings({ onComplete, raceInfo }: Props) {
+export default function IMLogicSettings({ onComplete }: Props) {
   const [settingsName, setSettingsName] = useState('カスタム設定');
   const [horseWeight, setHorseWeight] = useState(70);
   const [jockeyWeight, setJockeyWeight] = useState(30);
@@ -299,9 +287,9 @@ export default function IMLogicSettings({ onComplete, raceInfo }: Props) {
 
       onComplete(settings);
       toast.success('IMLogic設定を保存しました');
-    } catch (error: any) {
+    } catch (error) {
       console.error('設定保存エラー:', error);
-      toast.error(error.message || 'IMLogic設定の保存に失敗しました');
+      toast.error(error instanceof Error ? error.message : 'IMLogic設定の保存に失敗しました');
     } finally {
       setSaving(false);
     }

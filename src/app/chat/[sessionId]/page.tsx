@@ -158,7 +158,6 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
           {step === 'settings' && (
             <div className="bg-[var(--surface)] rounded-2xl shadow-xl border border-[var(--border)] p-8">
               <IMLogicSettings
-                raceInfo={race}
                 onComplete={(value: IMLogicSettingsData) => {
                   setSettings(value);
                   setStep('chat');

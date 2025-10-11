@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Calendar, Filter, MapPin, Trophy } from 'lucide-react';
+import { Filter, MapPin, Trophy } from 'lucide-react';
 
 import type { BoatRaceDetail } from '@/types/race';
 
