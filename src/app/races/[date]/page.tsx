@@ -82,7 +82,7 @@ export default function VenueSelectionPage({ params }: VenuePageProps) {
           {venuesWithRaces.map(({ venue, raceCount, highestGrade }) => (
             <Link
               key={venue}
-              href={`/races/${date}/${venue}`}
+              href={`/races/${date}/${encodeURIComponent(venue)}`}
               className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 transition-all hover:border-[var(--brand-primary)] hover:shadow-lg"
             >
               <div className="flex items-start justify-between mb-4">

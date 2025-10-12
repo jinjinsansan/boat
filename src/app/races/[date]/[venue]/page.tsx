@@ -32,7 +32,10 @@ function getGradeBadgeStyle(grade: string) {
 
 export default function RaceListPage({ params }: RaceListPageProps) {
   const router = useRouter();
-  const { date, venue } = use(params);
+  const { date, venue: rawVenue } = use(params);
+  
+  // URLデコード
+  const venue = decodeURIComponent(rawVenue);
 
   const groupedRaces = getGroupedRacesByDate();
   const currentDateInfo = groupedRaces.find((g) => g.date === date);
