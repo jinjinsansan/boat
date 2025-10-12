@@ -1,6 +1,5 @@
 import NextAuth, { NextAuthOptions } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
-import { supabaseAdmin } from '../../../src/lib/supabase/server'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 export const authOptions: NextAuthOptions = {
@@ -11,7 +10,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user }) {
       // Googleログイン時にSupabaseにユーザーを作成/更新（オプショナル）
       try {
         // Supabase接続をスキップ（まずはサインインを優先）
