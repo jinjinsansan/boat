@@ -88,8 +88,8 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/auth/signin',
-    signOut: '/auth/signout',
-    error: '/auth/error',
+    // Use NextAuth default error page
+    // error: '/auth/error',
   },
   session: {
     strategy: 'jwt', // JWTベースのセッション管理
