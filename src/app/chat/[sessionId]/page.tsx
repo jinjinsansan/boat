@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Award } from 'lucide-react';
+import { Award, ChevronUp, ChevronDown } from 'lucide-react';
 
 import { ChatInterface } from '@/components/boat/logicchat/ChatInterface';
 import IMLogicSettings from '@/components/boat/logicchat/IMLogicSettings';
@@ -32,6 +32,8 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState<Step>('settings');
   const [settings, setSettings] = useState<IMLogicSettingsData | null>(null);
+  const [showMobileRaceTable, setShowMobileRaceTable] = useState(false);
+  const headerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -155,6 +157,105 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
             <div className="flex flex-col lg:flex-row h-full relative">
               {/* メインチャットエリア - 右マージンを追加 */}
               <div className="flex-1 flex flex-col h-full lg:mr-[450px] xl:mr-[550px] 2xl:mr-[650px]">
+                
+                {/* モバイル・タブレット用出走表アコーディオン */}
+                <div ref={headerRef} className="lg:hidden fixed top-16 left-0 right-0 z-50">
+                  {/* 開閉ボタン */}
+                  <div className="border-b border-[var(--border)] bg-[var(--surface)]">
+                    <button
+                      onClick={() => setShowMobileRaceTable(!showMobileRaceTable)}
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between text-[var(--foreground)] hover:bg-[var(--background)] transition-colors"
+                    >
+                      <div className="flex items-center space-x-1.5 sm:space-x-2">
+                        <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--brand-primary)]" />
+                        <span className="text-sm sm:text-base font-medium">
+                          {race.venue} {race.day}R
+                        </span>
+                        <span className="text-xs text-[var(--muted)] ml-1">
+                          ({race.entries.length}艇)
+                        </span>
+                      </div>
+                      {showMobileRaceTable ? (
+                        <ChevronUp className="w-4 h-4 text-[var(--brand-primary)]" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-[var(--muted)]" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* アコーディオンコンテンツ */}
+                  {showMobileRaceTable && (
+                    <div className="border-b border-[var(--border)] bg-[var(--surface)]" style={{ maxHeight: '40vh' }}>
+                      <div className="h-full w-full overflow-y-auto" style={{ maxHeight: '40vh' }}>
+                        <div className="w-full overflow-x-auto">
+                          <div className="p-4">
+                            {/* レース情報 */}
+                            <div className="mb-4">
+                              <div className="grid grid-cols-3 gap-2 text-sm">
+                                <div>
+                                  <span className="text-xs text-[var(--muted)]">天候</span>
+                                  <p className="font-medium text-[var(--foreground)]">{race.weather}</p>
+                                </div>
+                                <div>
+                                  <span className="text-xs text-[var(--muted)]">風速</span>
+                                  <p className="font-medium text-[var(--foreground)]">{race.windSpeed} m/s</p>
+                                </div>
+                                <div>
+                                  <span className="text-xs text-[var(--muted)]">波高</span>
+                                  <p className="font-medium text-[var(--foreground)]">{race.waveHeight} cm</p>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* 出走表 */}
+                            <div className="bg-[var(--background)] rounded-lg overflow-hidden">
+                              <table className="w-full text-sm min-w-[500px]">
+                                <thead>
+                                  <tr className="border-b border-[var(--border)] bg-[var(--background)]">
+                                    <th className="text-left py-2 px-2 text-xs text-[var(--muted)]">艇</th>
+                                    <th className="text-left py-2 px-2 text-xs text-[var(--muted)]">登録</th>
+                                    <th className="text-left py-2 px-2 text-xs text-[var(--muted)]">選手名</th>
+                                    <th className="text-left py-2 px-2 text-xs text-[var(--muted)]">支部</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {race.entries.map((entry) => {
+                                    const laneColors = [
+                                      'bg-white text-black',
+                                      'bg-black text-white',
+                                      'bg-red-600 text-white',
+                                      'bg-blue-600 text-white',
+                                      'bg-yellow-400 text-black',
+                                      'bg-green-600 text-white',
+                                    ];
+                                    const color = laneColors[entry.lane - 1] || 'bg-gray-500 text-white';
+                                    
+                                    return (
+                                      <tr
+                                        key={entry.registerNumber}
+                                        className="border-b border-[var(--border)] hover:bg-[var(--surface)] transition-colors"
+                                      >
+                                        <td className="py-2 px-2">
+                                          <span className={`inline-block w-6 h-6 text-xs font-bold text-center leading-6 rounded ${color}`}>
+                                            {entry.lane}
+                                          </span>
+                                        </td>
+                                        <td className="py-2 px-2 text-[var(--foreground)] text-xs">{entry.registerNumber}</td>
+                                        <td className="py-2 px-2 text-[var(--foreground)] font-medium">{entry.racerName}</td>
+                                        <td className="py-2 px-2 text-[var(--muted)] text-xs">{entry.branch}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="h-[calc(100vh-180px)]">
                   <ChatInterface
                     sessionId={sessionId}

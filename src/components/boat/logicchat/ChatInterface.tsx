@@ -205,14 +205,14 @@ ${messageToSend}に対する分析結果です。
                     }
                   }}
                   placeholder="例: 全艇分析して"
-                  className="w-full px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] rounded-lg focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-transparent focus:outline-none transition-all duration-300"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] rounded-t-lg focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-transparent focus:outline-none transition-all duration-300"
                   disabled={sending}
                 />
               </div>
               <button
                 onClick={() => sendMessage()}
                 disabled={!inputMessage.trim() || sending}
-                className={`flex-shrink-0 p-2 sm:p-2.5 md:p-3 rounded-lg transition-all ${
+                className={`flex-shrink-0 p-2 sm:p-2.5 md:p-3 rounded-tr-lg transition-all ${
                   !inputMessage.trim() || sending
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-[var(--brand-primary)] text-white hover:bg-[#0d4fce] active:scale-95'
@@ -225,7 +225,7 @@ ${messageToSend}に対する分析結果です。
             {/* 開閉ボタン - 入力エリアの下に配置 */}
             <button
               onClick={() => setIsPanelOpen(!isPanelOpen)}
-              className="mt-2 w-full py-1.5 bg-[var(--background)] hover:bg-[var(--surface)] border border-[var(--border)] rounded-md transition-all duration-200 flex items-center justify-center gap-2 text-[var(--muted)] hover:text-[var(--brand-primary)] text-xs sm:text-sm"
+              className="mt-2 w-full py-1.5 bg-[var(--background)] hover:bg-[var(--surface)] border border-[var(--border)] border-t-0 rounded-b-md transition-all duration-200 flex items-center justify-center gap-2 text-[var(--muted)] hover:text-[var(--brand-primary)] text-xs sm:text-sm"
               type="button"
             >
               {isPanelOpen ? (

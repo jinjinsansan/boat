@@ -96,13 +96,13 @@ export default function SlideUpPresetPanel({ onPresetClick, isOpen, setIsOpen, d
       {/* スライドアップパネル */}
       <div
         ref={panelRef}
-        className={`absolute bottom-full left-0 right-0 mb-2 transition-all duration-300 ease-out z-50 ${
+        className={`absolute bottom-full left-0 right-0 mb-0 transition-all duration-300 ease-out z-50 ${
           isOpen 
             ? 'opacity-100 translate-y-0' 
             : 'opacity-0 translate-y-4 pointer-events-none'
         }`}
       >
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg overflow-hidden shadow-2xl">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-t-lg border-b-0 overflow-hidden shadow-2xl">
           {/* タブヘッダー */}
           <div className="flex border-b border-[var(--border)]">
             {Object.entries(presetCategories).map(([key, category]) => {
