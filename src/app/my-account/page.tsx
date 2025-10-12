@@ -19,6 +19,7 @@ export default function MyAccountPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState<ActiveTab>("profile");
+  const userPoints = 0;
 
   useEffect(() => {
     if (status === "unauthenticated") {

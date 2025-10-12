@@ -2,11 +2,25 @@ import NextAuth, { NextAuthOptions } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
+const googleClientId = process.env.GOOGLE_CLIENT_ID ?? process.env.AUTH_GOOGLE_ID
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET ?? process.env.AUTH_GOOGLE_SECRET
+const nextAuthSecret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET ?? (process.env.NODE_ENV !== 'production' ? 'development-secret' : undefined)
+
+if (!googleClientId || !googleClientSecret) {
+  console.error('[Boat] Missing Google OAuth environment variables. Please set GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET (or AUTH_GOOGLE_ID/AUTH_GOOGLE_SECRET).')
+  throw new Error('Missing Google OAuth environment variables')
+}
+
+if (!nextAuthSecret) {
+  console.error('[Boat] Missing NextAuth secret. Please set NEXTAUTH_SECRET (or AUTH_SECRET).')
+  throw new Error('Missing NextAuth secret environment variable')
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: googleClientId,
+      clientSecret: googleClientSecret,
     }),
   ],
   callbacks: {
@@ -109,7 +123,7 @@ export const authOptions: NextAuthOptions = {
       }
     }
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: nextAuthSecret,
 }
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
