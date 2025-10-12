@@ -80,47 +80,87 @@ function createRaceEntries(seed: number): BoatRaceEntry[] {
   }));
 }
 
-export const mockRaceSummaries: BoatRaceSummary[] = [
-  {
-    id: "naruto-20251010-g1",
-    date: "2025-10-10",
-    venue: "鳴門",
-    day: 3,
-    title: "鳴門 G1 開設71周年記念競走",
-    grade: "G1",
-    weather: "晴れ",
-    windSpeed: 4,
-    waveHeight: 5,
-    aiRank: 4,
+// レース名のテンプレート（グレード別）
+const raceNameTemplates = {
+  SG: ["ボートレースクラシック", "グランプリ", "オーシャンカップ"],
+  G1: ["開設記念競走", "周年記念", "ダービー"],
+  G2: ["モーターボート大賞", "秩父宮妃記念杯", "レディースチャンピオン"],
+  G3: ["オールスター競走", "マスターズリーグ", "若鷹リーグ"],
+  一般: ["一般競走", "予選", "準優勝戦", "優勝戦"],
+};
+
+// 開催場リスト
+const venues = ["鳴門", "戸田", "多摩川", "浜名湖", "児島", "宮島"];
+
+// レース詳細データを生成する関数
+function generateRaceDetail(
+  date: string,
+  venue: string,
+  raceNumber: number,
+  grade: "SG" | "G1" | "G2" | "G3" | "一般"
+): BoatRaceSummary {
+  const templates = raceNameTemplates[grade];
+  const raceName = templates[Math.floor(Math.random() * templates.length)];
+  const raceId = `${venue}-${date}-${raceNumber}r`;
+
+  return {
+    id: raceId,
+    date,
+    venue,
+    day: raceNumber,
+    title: `${venue} ${grade === "一般" ? "" : grade + " "}${raceName}`,
+    grade,
+    weather: ["晴れ", "くもり", "雨"][Math.floor(Math.random() * 3)],
+    windSpeed: Math.floor(Math.random() * 6) + 1,
+    waveHeight: Math.floor(Math.random() * 8) + 2,
+    aiRank: Math.floor(Math.random() * 5) + 1,
     status: "upcoming",
-  },
-  {
-    id: "toda-20251010-g2",
-    date: "2025-10-10",
-    venue: "戸田",
-    day: 2,
-    title: "戸田 G2 モーターボート大賞",
-    grade: "G2",
-    weather: "くもり",
-    windSpeed: 3,
-    waveHeight: 4,
-    aiRank: 3,
-    status: "upcoming",
-  },
-  {
-    id: "tamagawa-20251010-sg",
-    date: "2025-10-10",
-    venue: "多摩川",
-    day: 1,
-    title: "多摩川 SG ボートレースクラシック",
-    grade: "SG",
-    weather: "晴れ",
-    windSpeed: 2,
-    waveHeight: 3,
-    aiRank: 5,
-    status: "live",
-  },
-];
+  };
+}
+
+// モックデータ生成
+export const mockRaceSummaries: BoatRaceSummary[] = [];
+
+// 10月12日（日） - 鳴門（G1）、戸田（G2）
+const date1012 = "2025-10-12";
+for (let r = 1; r <= 10; r++) {
+  const grade = r === 10 ? "G1" : r >= 8 ? "G3" : "一般";
+  mockRaceSummaries.push(generateRaceDetail(date1012, "鳴門", r, grade));
+}
+for (let r = 1; r <= 10; r++) {
+  const grade = r === 10 ? "G2" : r >= 8 ? "G3" : "一般";
+  mockRaceSummaries.push(generateRaceDetail(date1012, "戸田", r, grade));
+}
+
+// 10月11日（土） - 多摩川（SG）、浜名湖（G3）
+const date1011 = "2025-10-11";
+for (let r = 1; r <= 10; r++) {
+  const grade = r === 10 ? "SG" : r >= 8 ? "G1" : "一般";
+  mockRaceSummaries.push(generateRaceDetail(date1011, "多摩川", r, grade));
+}
+for (let r = 1; r <= 10; r++) {
+  const grade = r === 10 ? "G3" : "一般";
+  mockRaceSummaries.push(generateRaceDetail(date1011, "浜名湖", r, grade));
+}
+
+// 10月5日（日） - 児島（G2）、宮島（一般）
+const date1005 = "2025-10-05";
+for (let r = 1; r <= 10; r++) {
+  const grade = r === 10 ? "G2" : r >= 8 ? "G3" : "一般";
+  mockRaceSummaries.push(generateRaceDetail(date1005, "児島", r, grade));
+}
+for (let r = 1; r <= 10; r++) {
+  mockRaceSummaries.push(generateRaceDetail(date1005, "宮島", r, "一般"));
+}
+
+// 10月4日（土） - 鳴門（一般）、戸田（一般）
+const date1004 = "2025-10-04";
+for (let r = 1; r <= 10; r++) {
+  mockRaceSummaries.push(generateRaceDetail(date1004, "鳴門", r, "一般"));
+}
+for (let r = 1; r <= 10; r++) {
+  mockRaceSummaries.push(generateRaceDetail(date1004, "戸田", r, "一般"));
+}
 
 export const mockRaceDetails: BoatRaceDetail[] = mockRaceSummaries.map(
   (race, index) => ({
@@ -147,4 +187,48 @@ export function getMockRaceById(raceId: string): BoatRaceDetail | undefined {
 export function getParticipantsByRaceId(raceId: string): BoatRaceEntry[] {
   const race = getMockRaceById(raceId);
   return race ? race.entries : [];
+}
+
+// 日付でグループ化したレースデータを取得
+export interface GroupedRacesByDate {
+  date: string;
+  displayDate: string;
+  venues: string[];
+  totalRaces: number;
+}
+
+export function getGroupedRacesByDate(): GroupedRacesByDate[] {
+  const dateMap = new Map<string, Set<string>>();
+
+  mockRaceSummaries.forEach((race) => {
+    if (!dateMap.has(race.date)) {
+      dateMap.set(race.date, new Set());
+    }
+    dateMap.get(race.date)!.add(race.venue);
+  });
+
+  return Array.from(dateMap.entries())
+    .map(([date, venues]) => {
+      const racesForDate = mockRaceSummaries.filter((r) => r.date === date);
+      const dateObj = new Date(date);
+      const month = dateObj.getMonth() + 1;
+      const day = dateObj.getDate();
+      const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+      const weekday = weekdays[dateObj.getDay()];
+
+      return {
+        date,
+        displayDate: `${month}月${day}日(${weekday})`,
+        venues: Array.from(venues),
+        totalRaces: racesForDate.length,
+      };
+    })
+    .sort((a, b) => b.date.localeCompare(a.date)); // 新しい日付順
+}
+
+// 特定の日付と開催場のレース一覧を取得
+export function getRacesByDateAndVenue(date: string, venue: string): BoatRaceSummary[] {
+  return mockRaceSummaries
+    .filter((race) => race.date === date && race.venue === venue)
+    .sort((a, b) => a.day - b.day); // レース番号順
 }
