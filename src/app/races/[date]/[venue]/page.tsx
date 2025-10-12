@@ -1,14 +1,14 @@
 'use client';
 
-import { use, useMemo } from 'react';
+import { use, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Calendar, ChevronLeft, MapPin, MessageSquare, Trophy } from 'lucide-react';
-import { nanoid } from 'nanoid/non-secure';
+import { Calendar, ChevronLeft, MapPin, MessageSquare, Trophy, Loader2 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 import { getGroupedRacesByDate, getRacesByDateAndVenue } from '@/data/mock/races';
-import { loadUserChatSessions, saveUserChatSessions } from '@/data/mock/chat';
 import type { ChatSession } from '@/types/chat';
+import type { BoatRaceInfo } from '@/data/mock/races';
 
 interface RaceListPageProps {
   params: Promise<{ date: string; venue: string }>;
@@ -32,7 +32,9 @@ function getGradeBadgeStyle(grade: string) {
 
 export default function RaceListPage({ params }: RaceListPageProps) {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const { date, venue: rawVenue } = use(params);
+  const [creatingChat, setCreatingChat] = useState<string | null>(null);
   
   // URLデコード
   const venue = decodeURIComponent(rawVenue);
@@ -49,23 +51,66 @@ export default function RaceListPage({ params }: RaceListPageProps) {
     return allRaces;
   }, [date, venue, allRaces]);
 
-  const handleCreateChat = (raceId: string, raceTitle: string) => {
-    const now = new Date().toISOString();
-    const sessionId = `boat-${nanoid(10)}`;
-    const newSession: ChatSession = {
-      id: sessionId,
-      raceId: raceId,
-      raceTitle: raceTitle,
-      createdAt: now,
-      updatedAt: now,
-      summary: `${venue} ${raceTitle}の分析チャット`,
-      messages: [],
-    };
+  const handleCreateChat = async (race: BoatRaceInfo) => {
+    // ログインチェック
+    if (!session?.user?.email) {
+      alert('ログインが必要です');
+      router.push('/auth/signin');
+      return;
+    }
 
-    const userSessions = loadUserChatSessions();
-    const updated = [newSession, ...userSessions];
-    saveUserChatSessions(updated);
-    router.push(`/chat/${sessionId}`);
+    const raceId = `boat-${date}-${venue}-${race.day}R`;
+    setCreatingChat(raceId);
+
+    try {
+      console.log('[Boat] チャット作成開始:', raceId);
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v2/chat/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.user.email}`
+        },
+        body: JSON.stringify({
+          race_id: raceId,
+          race_date: date,
+          venue: venue,
+          race_number: race.day,
+          race_name: race.title,
+          race_type: 'boat',
+          grade: race.grade,
+          weather: race.weather,
+          wind_speed: race.windSpeed,
+          wave_height: race.waveHeight,
+          water_temp: race.waterTemp,
+          participants: race.participants?.map(p => ({
+            lane: p.lane,
+            name: p.name,
+            boat_number: p.boatNumber,
+            motor: p.motor,
+            boat: p.boat,
+            st_timing: p.stTiming,
+            win_rate: p.winRate,
+            exhibition_time: p.exhibitionTime,
+          }))
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[Boat] チャット作成成功:', data.chat_id || data.session_id);
+        router.push(`/chat/${data.chat_id || data.session_id}`);
+      } else {
+        const error = await response.json();
+        console.error('[Boat] チャット作成エラー:', error);
+        alert(error.detail || 'チャット作成に失敗しました');
+      }
+    } catch (error) {
+      console.error('[Boat] チャット作成エラー:', error);
+      alert('チャット作成に失敗しました');
+    } finally {
+      setCreatingChat(null);
+    }
   };
 
   if (!currentDateInfo) {
@@ -205,15 +250,25 @@ export default function RaceListPage({ params }: RaceListPageProps) {
                 {/* チャット作成ボタン */}
                 <button
                   type="button"
-                  onClick={() => handleCreateChat(race.id, race.title)}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-bold transition-all ${
+                  onClick={() => handleCreateChat(race)}
+                  disabled={creatingChat === `boat-${date}-${venue}-${race.day}R`}
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                     hasHighGrade
                       ? 'bg-gradient-to-r from-[var(--brand-primary)] to-[#0d4fce] text-white shadow-lg hover:shadow-xl'
                       : 'bg-[var(--brand-primary)] text-white hover:bg-[#0d4fce]'
                   }`}
                 >
-                  <MessageSquare className="h-4 w-4" />
-                  <span>{isMainRace ? '🏆 メインレース分析' : 'チャット作成'}</span>
+                  {creatingChat === `boat-${date}-${venue}-${race.day}R` ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>作成中...</span>
+                    </>
+                  ) : (
+                    <>
+                      <MessageSquare className="h-4 w-4" />
+                      <span>{isMainRace ? '🏆 メインレース分析' : 'チャット作成'}</span>
+                    </>
+                  )}
                 </button>
               </div>
             );

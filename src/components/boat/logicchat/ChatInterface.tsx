@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { nanoid } from 'nanoid/non-secure';
 import { Loader2, Send, ChevronUp, ChevronDown } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { useSession } from 'next-auth/react';
 
 import type { ChatMessage } from '@/types/chat';
 import type { BoatRaceDetail } from '@/types/race';
@@ -33,11 +34,13 @@ const createUserMessage = (content: string): ChatMessage => ({
 });
 
 export function ChatInterface({
+  sessionId,
   race,
   settings,
   initialMessages,
   onMessagesUpdate,
 }: ChatInterfaceProps) {
+  const { data: session } = useSession();
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   
@@ -47,7 +50,7 @@ export function ChatInterface({
     }
     return [
       createAssistantMessage(
-        '競馬版の UX を移植したモックチャットです。レース情報をもとに分析のシナリオを試せます。プリセットや自由入力で質問してみてください。',
+        '競艇レースの分析チャットへようこそ！レース情報をもとに詳細な分析を行います。プリセットまたは自由入力で質問してください。',
       ),
     ];
   });
@@ -72,35 +75,68 @@ export function ChatInterface({
     const messageToSend = overrideMessage || inputMessage.trim();
     if (!messageToSend) return;
 
+    if (!session?.user?.email) {
+      toast.error('ログインが必要です');
+      return;
+    }
+
     const newUserMessage = createUserMessage(messageToSend);
     setMessages(prev => [...prev, newUserMessage]);
     setInputMessage('');
     setSending(true);
 
     try {
-      // モック応答（将来的にはAPI呼び出しに置き換え）
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('[Boat] メッセージ送信開始:', messageToSend);
       
-      const mockResponse = `【モック応答】
-${messageToSend}に対する分析結果です。
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v2/chat/session/${sessionId}/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.user.email}`
+        },
+        body: JSON.stringify({
+          message: messageToSend,
+          settings: settings || {},
+          race_info: {
+            race_id: race.id,
+            venue: race.venue,
+            race_number: race.raceNumber,
+            race_name: race.title,
+            participants: race.participants
+          }
+        })
+      });
 
-艇:${settings?.horse_weight || 70}% / 選手:${settings?.jockey_weight || 30}% の重みで分析しました。
-
-実際のエンジン連携時には、ここに詳細な分析結果が表示されます。`;
-
-      const assistantMessage = createAssistantMessage(mockResponse);
-      setMessages(prev => [...prev, assistantMessage]);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[Boat] メッセージ送信成功:', data);
+        
+        const assistantMessage = createAssistantMessage(
+          data.message?.content || data.response || '分析結果を取得しました'
+        );
+        setMessages(prev => [...prev, assistantMessage]);
+      } else {
+        const error = await response.json();
+        console.error('[Boat] メッセージ送信エラー:', error);
+        toast.error('メッセージの送信に失敗しました');
+        
+        const errorMessage = createAssistantMessage(
+          error.detail || 'メッセージの送信に失敗しました。もう一度お試しください。'
+        );
+        setMessages(prev => [...prev, errorMessage]);
+      }
     } catch (error) {
-      console.error('メッセージ送信エラー:', error);
-      toast.error('メッセージの送信に失敗しました');
+      console.error('[Boat] メッセージ送信エラー:', error);
+      toast.error('通信エラーが発生しました');
+      
       const errorMessage = createAssistantMessage(
-        'エンジンへの接続に失敗しました。通信環境を確認するか、後ほど再度お試しください。',
+        'エンジンへの接続に失敗しました。通信環境を確認するか、後ほど再度お試しください。'
       );
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setSending(false);
     }
-  }, [inputMessage, settings]);
+  }, [inputMessage, settings, session, sessionId, race]);
 
   const sendPresetMessage = useCallback((message: string) => {
     sendMessage(message);
