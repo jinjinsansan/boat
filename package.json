@@ -13,10 +13,11 @@
     "@supabase/supabase-js": "^2.75.0",
     "lucide-react": "^0.545.0",
     "nanoid": "^5.0.7",
-    "react-hot-toast": "^2.4.1",
     "next": "15.5.4",
+    "next-auth": "^4.24.11",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "react-hot-toast": "^2.4.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

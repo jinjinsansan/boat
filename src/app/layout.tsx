@@ -3,6 +3,7 @@ import { Noto_Sans_JP, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { HeaderNav } from "@/components/layout/HeaderNav";
 import { Toaster } from "react-hot-toast";
+import { SessionProvider } from "@/components/providers/SessionProvider";
 
 const notoSans = Noto_Sans_JP({
   variable: "--font-noto-sans-jp",
@@ -42,21 +43,23 @@ export default function RootLayout({
       <body
         className={`min-h-screen bg-[var(--background)] text-[var(--foreground)] ${notoSans.variable} ${robotoMono.variable} antialiased`}
       >
-        <div className="flex min-h-screen flex-col">
-          <HeaderNav />
+        <SessionProvider>
+          <div className="flex min-h-screen flex-col">
+            <HeaderNav />
 
-          <main className="flex-1 bg-[var(--background)]">
-            {children}
-            <Toaster position="top-right" toastOptions={{ duration: 2500 }} />
-          </main>
+            <main className="flex-1 bg-[var(--background)]">
+              {children}
+              <Toaster position="top-right" toastOptions={{ duration: 2500 }} />
+            </main>
 
-          <footer className="border-t border-[var(--border)] bg-[var(--surface)]">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-6 py-6 text-sm text-[var(--muted)] md:flex-row md:items-center md:justify-between">
-              <span>© {year} D-Logic Boat</span>
-              <span>競艇AIプラットフォーム（UIモック）</span>
-            </div>
-          </footer>
-        </div>
+            <footer className="border-t border-[var(--border)] bg-[var(--surface)]">
+              <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-6 py-6 text-sm text-[var(--muted)] md:flex-row md:items-center md:justify-between">
+                <span>© {year} D-Logic Boat</span>
+                <span>競艇AIプラットフォーム（UIモック）</span>
+              </div>
+            </footer>
+          </div>
+        </SessionProvider>
       </body>
     </html>
   );

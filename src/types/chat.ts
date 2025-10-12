@@ -1,18 +1,10 @@
-export type ChatRole = "user" | "assistant";
+// チャット関連の型定義（競艇版）
 
 export interface ChatMessage {
   id: string;
-  role: ChatRole;
+  role: 'user' | 'assistant';
   content: string;
-  createdAt: string;
-}
-
-export interface ChatPreset {
-  id: string;
-  label: string;
-  description?: string;
-  message: string;
-  category: "prediction" | "trend" | "knowledge" | "starter";
+  timestamp: string;
 }
 
 export interface ChatSession {
@@ -21,6 +13,28 @@ export interface ChatSession {
   raceTitle: string;
   createdAt: string;
   updatedAt: string;
-  summary: string;
+  summary?: string;
   messages: ChatMessage[];
+}
+
+export interface CreateChatSessionRequest {
+  raceId: string;
+  raceTitle: string;
+  raceDate?: string;
+  venue?: string;
+  grade?: string;
+}
+
+export interface CreateChatSessionResponse {
+  chat_id: string;
+  session_id: string;
+}
+
+export interface SendMessageRequest {
+  message: string;
+  sessionId: string;
+}
+
+export interface SendMessageResponse {
+  message: ChatMessage;
 }
