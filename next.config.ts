@@ -1,13 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // TypeScript型チェックは有効のまま（エラーを表示）
   typescript: {
-    // ビルド時の型エラーを無視（一時的な対応）
+    // .next/types の型エラーを無視
     ignoreBuildErrors: true,
   },
+  // ESLintは有効のまま（警告のみ表示）
   eslint: {
-    // ビルド時のESLintエラーを無視（一時的な対応）
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
 };
 
