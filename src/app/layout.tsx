@@ -18,8 +18,16 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "D-Logic Boat UI",
+  title: "D-Logic Boat",
   description: "競艇向けD-Logic体験のためのフロントエンドUI",
+  icons: {
+    icon: [
+      {
+        url: '/icon.svg',
+        type: 'image/svg+xml',
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
