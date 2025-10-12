@@ -12,8 +12,12 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account }) {
-      // Googleログイン時にSupabaseにユーザーを作成/更新
+      // Googleログイン時にSupabaseにユーザーを作成/更新（オプショナル）
       try {
+        // Supabase接続をスキップ（まずはサインインを優先）
+        console.log('[Boat] User signed in:', user.email);
+        // TODO: 後でSupabase連携を有効化
+        /*
         const { data: existingUser } = await supabaseAdmin
           .from('v2_users')
           .select('*')
@@ -56,8 +60,10 @@ export const authOptions: NextAuthOptions = {
             })
             .eq('id', existingUser.id)
         }
+        */
       } catch (error) {
-        console.error('[Boat] Supabase user sync error:', error)
+        console.error('[Boat] Supabase user sync error (non-blocking):', error)
+        // エラーが出てもサインインは成功させる
       }
       
       return true
