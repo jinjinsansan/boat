@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
-import { getSupabaseClient } from "@/lib/supabaseClient";
+import { useSession, signOut } from "next-auth/react";
 import {
   User,
   LogOut,
@@ -18,22 +17,25 @@ type ActiveTab = "profile" | "referral" | "chats" | "points" | "settings";
 
 export default function MyAccountPage() {
   const router = useRouter();
-  const { user, loading, error } = useAuth();
+  const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState<ActiveTab>("profile");
 
   useEffect(() => {
-    if (!loading && !user && !error) {
-      router.push("/auth/sign-in");
+    if (status === "unauthenticated") {
+      router.push("/auth/signin");
     }
-  }, [loading, user, error, router]);
+  }, [status, router]);
 
   const handleSignOut = async () => {
-    const supabase = getSupabaseClient();
-    await supabase.auth.signOut();
-    router.push("/");
+    try {
+      await signOut({ redirect: false });
+      router.push("/");
+    } catch (error) {
+      console.error("サインアウトエラー:", error);
+    }
   };
 
-  if (loading) {
+  if (status === "loading") {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
@@ -44,7 +46,7 @@ export default function MyAccountPage() {
     );
   }
 
-  if (error) {
+  if (!session) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center max-w-md p-6">
@@ -53,11 +55,11 @@ export default function MyAccountPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-[#102a43] mb-2">認証エラー</h2>
-          <p className="text-sm text-[#4f5d7a] mb-4">{error}</p>
+          <h2 className="text-xl font-bold text-[#102a43] mb-2">ログインが必要です</h2>
+          <p className="text-sm text-[#4f5d7a] mb-4">この機能を利用するにはログインしてください</p>
           <div className="space-y-2">
             <Link
-              href="/auth/sign-in"
+              href="/auth/signin"
               className="block w-full rounded-full bg-[#0f62fe] px-6 py-3 text-sm font-semibold text-white hover:bg-[#0353e9] transition-colors"
             >
               サインインページへ
@@ -73,6 +75,8 @@ export default function MyAccountPage() {
       </div>
     );
   }
+
+  const user = session?.user;
 
   if (!user) {
     return null;
@@ -127,16 +131,16 @@ export default function MyAccountPage() {
             <div className="rounded-2xl border border-[#dfe7fb] bg-white p-6 shadow-lg">
               {/* ユーザー情報 */}
               <div className="mb-6 flex items-center space-x-4">
-                {user.user_metadata?.avatar_url ? (
+                {user.image ? (
                   <img
-                    src={user.user_metadata.avatar_url}
+                    src={user.image}
                     alt="Profile"
                     className="h-12 w-12 rounded-full"
                   />
                 ) : (
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0f62fe] text-white">
                     <span className="text-xl font-bold">
-                      {user.user_metadata?.name?.[0] ||
+                      {user.name?.[0] ||
                         user.email?.[0]?.toUpperCase() ||
                         "U"}
                     </span>
@@ -144,7 +148,7 @@ export default function MyAccountPage() {
                 )}
                 <div className="min-w-0">
                   <h3 className="truncate font-semibold text-[#102a43]">
-                    {user.user_metadata?.name || "ユーザー"}
+                    {user.name || "ユーザー"}
                   </h3>
                   <p className="truncate text-xs text-[#4f5d7a]">{user.email}</p>
                 </div>
@@ -223,7 +227,7 @@ export default function MyAccountPage() {
                         名前
                       </label>
                       <div className="rounded-xl border border-[#dfe7fb] bg-[#f5f8ff] px-4 py-3 text-[#102a43]">
-                        {user.user_metadata?.name || "未設定"}
+                        {user.name || "未設定"}
                       </div>
                     </div>
 
@@ -340,7 +344,7 @@ export default function MyAccountPage() {
                       <div className="flex justify-between">
                         <span>アカウント名:</span>
                         <span className="text-[#102a43]">
-                          {user.user_metadata?.name || "未設定"}
+                          {user.name || "未設定"}
                         </span>
                       </div>
                     </div>
