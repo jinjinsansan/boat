@@ -36,7 +36,15 @@ export default function RaceListPage({ params }: RaceListPageProps) {
 
   const groupedRaces = getGroupedRacesByDate();
   const currentDateInfo = groupedRaces.find((g) => g.date === date);
-  const races = useMemo(() => getRacesByDateAndVenue(date, venue), [date, venue]);
+  const allRaces = useMemo(() => getRacesByDateAndVenue(date, venue), [date, venue]);
+  
+  // 10月12日の鳴門のみ1R～3Rに制限（モック）
+  const races = useMemo(() => {
+    if (date === '2025-10-12' && venue === '鳴門') {
+      return allRaces.filter(race => race.day <= 3);
+    }
+    return allRaces;
+  }, [date, venue, allRaces]);
 
   const handleCreateChat = (raceId: string, raceTitle: string) => {
     const now = new Date().toISOString();
