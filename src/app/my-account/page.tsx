@@ -20,7 +20,6 @@ export default function MyAccountPage() {
   const router = useRouter();
   const { user, loading, error } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>("profile");
-  const [userPoints, setUserPoints] = useState<number>(0);
 
   useEffect(() => {
     if (!loading && !user && !error) {

@@ -90,7 +90,7 @@ const raceNameTemplates = {
 };
 
 // 開催場リスト（将来の拡張用）
-const _venues = ["鳴門", "戸田", "多摩川", "浜名湖", "児島", "宮島"];
+// const _venues = ["鳴門", "戸田", "多摩川", "浜名湖", "児島", "宮島"];
 
 // レース詳細データを生成する関数
 function generateRaceDetail(
