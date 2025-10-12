@@ -162,6 +162,75 @@ class V2ApiClient {
     }>('/api/v2/points/status');
   }
 
+  // LINE連携ステータス取得
+  async getLineStatus() {
+    return this.authenticatedFetch<{
+      line_connected: boolean;
+      line_connected_at: string | null;
+      has_used_referral: boolean;
+      referral_code: string;
+      referral_count: number;
+      line_connected_referral_count: number;
+      line_user_id: string | null;
+      has_claimed_daily_login?: boolean;
+      points_config?: {
+        line_connect: number;
+        referral: number;
+        daily_login: number;
+      };
+    }>('/api/v2/line/status');
+  }
+
+  // 友達紹介ステータス取得
+  async getReferralStatus() {
+    return this.authenticatedFetch<{
+      referral_code: string;
+      referral_url?: string | null;
+      line_connected_referral_count?: number;
+      pending_referral_count?: number;
+      total_referral_count?: number;
+      next_bonus_points?: number;
+      next_bonus_threshold?: number;
+      has_claimed_daily_login?: boolean;
+      points_config?: Record<string, number>;
+      total_bonus_points?: Record<string, number>;
+      line_connected?: boolean;
+      line_connected_at?: string | null;
+      has_used_referral?: boolean;
+    }>('/api/v2/line/referral/status');
+  }
+
+  // 友達紹介コード適用
+  async applyReferralCode(referralCode: string) {
+    return this.authenticatedFetch<{
+      success: boolean;
+      message: string;
+      points_granted?: number;
+      referrer_name?: string;
+      note?: string;
+    }>('/api/v2/line/referral', {
+      method: 'POST',
+      body: JSON.stringify({ referral_code: referralCode }),
+    });
+  }
+
+  // デイリーログインボーナス取得
+  async claimDailyLogin() {
+    return this.authenticatedFetch<{
+      points_granted: number;
+      message: string;
+    }>('/api/v2/points/daily-login', {
+      method: 'POST',
+    });
+  }
+
+  // LINE認証コード生成
+  async generateLineVerificationCode() {
+    return this.authenticatedFetch<{ code: string }>('/api/v2/line/generate-code', {
+      method: 'POST',
+    });
+  }
+
   // チャットセッション作成
   async createChatSession(sessionData: Record<string, unknown>) {
     return this.authenticatedFetch<{
@@ -195,6 +264,13 @@ class V2ApiClient {
     }>(`/api/v2/chat/session/${sessionId}/message`, {
       method: 'POST',
       body: JSON.stringify(messageData),
+    });
+  }
+
+  // チャットセッション削除
+  async deleteChatSession(sessionId: string) {
+    return this.authenticatedFetch<{ success: boolean }>(`/api/v2/chat/session/${sessionId}`, {
+      method: 'DELETE',
     });
   }
 
