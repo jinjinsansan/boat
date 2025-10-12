@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@/hooks/useAuth";
+import { useSession } from "next-auth/react";
 
 const ADMIN_EMAILS = ["goldbenchan@gmail.com", "kusanokiyoshi1@gmail.com"];
 
@@ -15,11 +15,20 @@ const primaryLinks = [
 ];
 
 export function HeaderNav() {
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
   const [menuMounted, setMenuMounted] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   
-  const isAdmin = user && ADMIN_EMAILS.includes(user.email || "");
+  const isAdmin = useMemo(() => {
+    const email = user?.email;
+    if (!email) return false;
+    return ADMIN_EMAILS.includes(email);
+  }, [user?.email]);
+
+  const userDisplayName = useMemo(() => {
+    return user?.name || user?.email || "";
+  }, [user?.email, user?.name]);
 
   const openMenu = useCallback(() => {
     if (menuVisible) return;
@@ -91,19 +100,29 @@ export function HeaderNav() {
               競艇AI D-Logic Boat
             </span>
           </Link>
-          <button
-            type="button"
-            aria-expanded={menuVisible}
-            aria-controls="nav-menu"
-            onClick={toggleMenu}
-            className="group flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[var(--muted)] shadow-[0_6px_16px_rgba(15,40,87,0.08)] transition-transform hover:-translate-y-0.5"
-          >
-            <span className="relative flex h-4 w-6 items-center justify-center">
-              <span className="absolute h-0.5 w-full -translate-y-2 rounded-full bg-[var(--foreground)] transition-transform group-hover:-translate-y-2.5" />
-              <span className="absolute h-0.5 w-full rounded-full bg-[var(--foreground)]" />
-              <span className="absolute h-0.5 w-full translate-y-2 rounded-full bg-[var(--foreground)] transition-transform group-hover:translate-y-2.5" />
-            </span>
-          </button>
+          <div className="flex items-center gap-3">
+            {userDisplayName && (
+              <span
+                className="max-w-[160px] truncate text-sm font-semibold text-[#102a43]"
+                title={userDisplayName}
+              >
+                {userDisplayName}
+              </span>
+            )}
+            <button
+              type="button"
+              aria-expanded={menuVisible}
+              aria-controls="nav-menu"
+              onClick={toggleMenu}
+              className="group flex h-10 w-10 items-center justify-center rounded-md bg-transparent text-[var(--muted)] transition-transform hover:-translate-y-0.5"
+            >
+              <span className="relative flex h-4 w-6 items-center justify-center">
+                <span className="absolute h-0.5 w-full -translate-y-2 rounded-full bg-[var(--foreground)] transition-transform group-hover:-translate-y-2.5" />
+                <span className="absolute h-0.5 w-full rounded-full bg-[var(--foreground)]" />
+                <span className="absolute h-0.5 w-full translate-y-2 rounded-full bg-[var(--foreground)] transition-transform group-hover:translate-y-2.5" />
+              </span>
+            </button>
+          </div>
         </div>
       </header>
       {menuMounted && (
