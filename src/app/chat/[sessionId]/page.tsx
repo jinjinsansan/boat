@@ -156,7 +156,7 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
           {headerContent && <div className="mb-8">{headerContent}</div>}
 
           {step === 'settings' && (
-            <div className="max-w-4xl mx-auto bg-[var(--surface)] rounded-2xl shadow-xl border border-[var(--border)] p-8">
+            <div className="max-w-3xl mx-auto bg-[var(--surface)] rounded-2xl shadow-xl border border-[var(--border)] p-4 sm:p-8">
               <IMLogicSettings
                 onComplete={(value: IMLogicSettingsData) => {
                   setSettings(value);
