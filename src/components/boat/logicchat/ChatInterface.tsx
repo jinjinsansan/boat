@@ -1,13 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { nanoid } from 'nanoid/non-secure';
-import { Loader2, SendHorizonal, Sparkles } from 'lucide-react';
+import { Loader2, Send, ChevronUp, ChevronDown } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 import type { ChatMessage } from '@/types/chat';
 import type { BoatRaceDetail } from '@/types/race';
 import type { IMLogicSettingsData } from '@/types/logicchat';
+import SlideUpPresetPanel from './SlideUpPresetPanel';
 
 interface ChatInterfaceProps {
   sessionId: string;
@@ -15,15 +16,7 @@ interface ChatInterfaceProps {
   settings?: IMLogicSettingsData | null;
   initialMessages?: ChatMessage[];
   onMessagesUpdate?: (messages: ChatMessage[]) => void;
-  isPanelOpen?: boolean;
 }
-
-const PRESET_MESSAGES = [
-  'このレースでイン逃げを阻止できる選手は誰？',
-  'まくりが決まる可能性を評価して',
-  '展示タイムを重視した順位予測を教えて',
-  '直近10走の成績から注目艇をピックアップして',
-];
 
 const createAssistantMessage = (content: string): ChatMessage => ({
   id: `assistant-${nanoid(12)}`,
@@ -44,9 +37,10 @@ export function ChatInterface({
   settings,
   initialMessages,
   onMessagesUpdate,
-  isPanelOpen = false,
 }: ChatInterfaceProps) {
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     if (initialMessages && initialMessages.length > 0) {
       return initialMessages;
@@ -57,9 +51,9 @@ export function ChatInterface({
       ),
     ];
   });
-  const [input, setInput] = useState('');
-  const [pending, setPending] = useState(false);
-  const [activeTab, setActiveTab] = useState<'imlogic' | 'viewlogic'>('imlogic');
+  const [inputMessage, setInputMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   useEffect(() => {
     if (!initialMessages || initialMessages.length === 0) return;
@@ -67,187 +61,188 @@ export function ChatInterface({
   }, [initialMessages]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
     onMessagesUpdate?.(messages);
   }, [messages, onMessagesUpdate]);
 
-  const placeholder = useMemo(() => {
-    if (settings) {
-      return `艇:${settings.horse_weight}% / 選手:${settings.jockey_weight}% の重みで分析します…`;
-    }
-    return '例: まくり差しが決まる展開を教えて';
-  }, [settings]);
+  const sendMessage = useCallback(async (overrideMessage?: string) => {
+    const messageToSend = overrideMessage || inputMessage.trim();
+    if (!messageToSend) return;
 
-  const sendMessage = useCallback(async (prompt: string, viaPreset = false) => {
-    const trimmed = prompt.trim();
-    if (!trimmed) return;
-
-    const newMessages: ChatMessage[] = [...messages, createUserMessage(trimmed)];
-    setMessages(newMessages);
-    setInput('');
-    setPending(true);
+    const newUserMessage = createUserMessage(messageToSend);
+    setMessages(prev => [...prev, newUserMessage]);
+    setInputMessage('');
+    setSending(true);
 
     try {
-      const payload = {
-        raceId: race.id,
-        prompt: trimmed,
-        settings,
-        participants: race.entries.map((entry) => ({
-          registerNumber: entry.registerNumber,
-          racerName: entry.racerName,
-          lane: entry.lane,
-          branch: entry.branch,
-          motorNo: entry.motorNo,
-          boatNo: entry.boatNo,
-          motorWinRate: entry.motorWinRate,
-          boatWinRate: entry.boatWinRate,
-        })),
-      };
+      // モック応答（将来的にはAPI呼び出しに置き換え）
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const mockResponse = `【モック応答】
+${messageToSend}に対する分析結果です。
 
-      const response = await fetch('/api/engines/boat-dlogic', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+艇:${settings?.horse_weight || 70}% / 選手:${settings?.jockey_weight || 30}% の重みで分析しました。
 
-      if (response.ok) {
-        const data = await response.json();
-        const answer = typeof data?.message === 'string'
-          ? data.message
-          : data?.data?.analysis?.summary || '詳細な分析結果はバックエンド連携後に表示されます。';
-        setMessages((prev) => [
-          ...prev,
-          createAssistantMessage(answer),
-        ]);
-        toast.success(viaPreset ? 'プリセット分析を実行しました' : '回答を生成しました');
-      } else {
-        const errorBody = await response.json().catch(() => null);
-        const errorMessage = errorBody?.error || '分析エンジンの準備中です。モック回答を表示します。';
-        setMessages((prev) => [
-          ...prev,
-          createAssistantMessage(`${errorMessage}\n\n・本番環境では競馬版と同じ IMLogic / ViewLogic エンジンが接続されます。`),
-        ]);
-        toast.error('バックエンドがまだ接続されていません');
-      }
+実際のエンジン連携時には、ここに詳細な分析結果が表示されます。`;
+
+      const assistantMessage = createAssistantMessage(mockResponse);
+      setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('[boat-chat] engine request failed', error);
-      setMessages((prev) => [
-        ...prev,
-        createAssistantMessage(
-          'エンジンへの接続に失敗しました。通信環境を確認するか、後ほど再度お試しください。仮回答として艇番別のキーポイントを提示します。',
-        ),
-      ]);
+      console.error('メッセージ送信エラー:', error);
+      toast.error('メッセージの送信に失敗しました');
+      const errorMessage = createAssistantMessage(
+        'エンジンへの接続に失敗しました。通信環境を確認するか、後ほど再度お試しください。',
+      );
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
-      setPending(false);
+      setSending(false);
     }
-  }, [messages, race, settings]);
+  }, [inputMessage, settings]);
+
+  const sendPresetMessage = useCallback((message: string) => {
+    sendMessage(message);
+  }, [sendMessage]);
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex gap-2 rounded-full bg-[var(--background)] p-1 text-sm text-[var(--muted)] mb-4">
-        <button
-          type="button"
-          onClick={() => setActiveTab('imlogic')}
-          className={`flex-1 rounded-full px-4 py-2 transition ${
-            activeTab === 'imlogic' ? 'bg-[var(--brand-primary)] text-white font-semibold' : 'hover:text-[var(--foreground)]'
-          }`}
-        >
-          IMLogic
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('viewlogic')}
-          className={`flex-1 rounded-full px-4 py-2 transition ${
-            activeTab === 'viewlogic' ? 'bg-[var(--brand-primary)] text-white font-semibold' : 'hover:text-[var(--foreground)]'
-          }`}
-        >
-          ViewLogic
-        </button>
-      </div>
-
-        <section className="rounded-2xl border border-[var(--border)] bg-[var(--background)] p-5">
-          <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--muted)]">
-            <Sparkles className="h-4 w-4 text-[var(--brand-primary)]" /> プリセット分析
-          </div>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {PRESET_MESSAGES.map((preset) => (
-              <button
-                type="button"
-                key={preset}
-                onClick={() => sendMessage(preset, true)}
-                disabled={pending}
-                className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-left text-sm text-[var(--foreground)] transition hover:border-[var(--brand-primary)] disabled:opacity-60"
-              >
-                {preset}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className={`flex-1 rounded-2xl border border-[var(--border)] bg-[var(--surface)] transition-all duration-300 ${
-          isPanelOpen ? 'lg:pr-96' : 'lg:pr-4'
-        }`}>
-          <div className="h-full overflow-y-auto px-6 py-6 text-sm text-[var(--foreground)]">
-            <div className="space-y-6">
-              {messages.map((message) => (
-                <div key={message.id} className="flex flex-col gap-2">
-                  <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-3 leading-relaxed ${
-                      message.role === 'assistant'
-                        ? 'self-start border border-[var(--border)] bg-white text-[var(--foreground)] shadow-sm'
-                        : 'self-end bg-[var(--brand-primary)] text-white'
-                    }`}
-                  >
-                    <p>{message.content}</p>
-                  </div>
-                  <span className="text-[10px] uppercase tracking-wide text-[var(--muted)]">
-                    {message.role === 'assistant' ? 'D-Logic Boat' : 'You'} • {new Date(message.createdAt).toLocaleTimeString('ja-JP', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
-                </div>
-              ))}
-              {pending && (
-                <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
-                  <Loader2 className="h-4 w-4 animate-spin text-[var(--brand-primary)]" /> 回答を生成しています...
-                </div>
-              )}
-              <div ref={bottomRef} />
+    <div className="flex flex-col h-full bg-[var(--background)]">
+      {/* メッセージエリア */}
+      <div 
+        className="flex-1 overflow-y-auto p-3 sm:p-4 pb-32 sm:pb-36 lg:pt-3 scroll-smooth"
+        ref={chatContainerRef}
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          scrollBehavior: 'smooth',
+          minHeight: 0,
+          overscrollBehavior: 'contain',
+          backgroundColor: 'var(--background)'
+        }}
+      >
+        {messages.length === 0 && !sending && (
+          <div className="text-center py-8 sm:py-12 max-w-4xl mx-auto px-4">
+            <h3 className="text-lg sm:text-xl font-bold text-[var(--foreground)] mb-4">
+              {race.venue} {race.day}R {race.title}
+            </h3>
+            
+            <div className="bg-[var(--surface)] rounded-xl p-4 sm:p-6 mb-6 border border-[var(--border)]">
+              <h4 className="text-lg font-bold text-[var(--brand-primary)] mb-4">🚀 使い方</h4>
+              <div className="text-left text-sm text-[var(--muted)] space-y-2">
+                <p>• 下の入力欄から自由に質問できます</p>
+                <p>• 「分析オプションを表示」ボタンでプリセット質問を選択できます</p>
+                <p>• 例: 「このレースの展開を教えて」「展示タイムを重視した順位予測を教えて」</p>
+                <p>• モック版では簡易的な応答を返します</p>
+              </div>
             </div>
           </div>
-        </section>
+        )}
 
-        <form
-          className="flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--background)] p-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            sendMessage(input);
-          }}
-        >
-          <textarea
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            placeholder={placeholder}
-            rows={3}
-            className="w-full resize-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--foreground)] focus:border-[var(--brand-primary)] focus:outline-none"
-          />
-          <div className="flex items-center justify-between text-xs text-[var(--muted)]">
-            <span>エンジン連携の準備中はモック回答を返します。</span>
+        {messages.map((message) => (
+          <div key={message.id} className="mb-4 sm:mb-6">
+            <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div
+                className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 ${
+                  message.role === 'assistant'
+                    ? 'bg-white text-[var(--foreground)] border border-[var(--border)] shadow-sm'
+                    : 'bg-[var(--brand-primary)] text-white'
+                }`}
+              >
+                <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
+              </div>
+            </div>
+            <div className={`text-xs text-[var(--muted)] mt-1 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+              {message.role === 'assistant' ? 'D-Logic Boat' : 'You'} • {new Date(message.createdAt).toLocaleTimeString('ja-JP', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </div>
+          </div>
+        ))}
+
+        {sending && (
+          <div className="flex items-center gap-2 text-sm text-[var(--muted)] mb-4">
+            <Loader2 className="h-4 w-4 animate-spin text-[var(--brand-primary)]" />
+            回答を生成しています...
+          </div>
+        )}
+
+        {/* スクロールアンカー */}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* 入力エリア - 画面下固定 */}
+      <div 
+        className="fixed bottom-0 left-0 right-0 lg:right-[450px] xl:right-[550px] 2xl:right-[650px] border-t border-[var(--border)] bg-[var(--surface)] pb-3 sm:pb-4 md:pb-5 z-50"
+        style={{ 
+          backdropFilter: 'blur(10px)',
+          backgroundColor: 'rgba(var(--surface-rgb), 0.98)',
+          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.1)',
+          paddingBottom: 'max(env(safe-area-inset-bottom, 12px), 12px)'
+        }}
+      >
+        {/* 入力フィールド */}
+        <div id="chat-input-area" className="px-2 sm:px-3 md:px-4 pt-2 pb-2">
+          <div className="relative">
+            <SlideUpPresetPanel 
+              onPresetClick={(message) => {
+                sendPresetMessage(message);
+              }}
+              isOpen={isPanelOpen}
+              setIsOpen={setIsPanelOpen}
+            />
+            
+            <div className="flex items-center gap-2 max-w-full">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
+                  placeholder="例: 全艇分析して"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] rounded-lg focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-transparent focus:outline-none transition-all duration-300"
+                  disabled={sending}
+                />
+              </div>
+              <button
+                onClick={() => sendMessage()}
+                disabled={!inputMessage.trim() || sending}
+                className={`flex-shrink-0 p-2 sm:p-2.5 md:p-3 rounded-lg transition-all ${
+                  !inputMessage.trim() || sending
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-[var(--brand-primary)] text-white hover:bg-[#0d4fce] active:scale-95'
+                } flex items-center justify-center`}
+              >
+                {sending ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : <Send className="w-4 h-4 sm:w-5 sm:h-5" />}
+              </button>
+            </div>
+            
+            {/* 開閉ボタン - 入力エリアの下に配置 */}
             <button
-              type="submit"
-              disabled={pending || input.trim() === ''}
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-primary)] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#0d4fce] disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={() => setIsPanelOpen(!isPanelOpen)}
+              className="mt-2 w-full py-1.5 bg-[var(--background)] hover:bg-[var(--surface)] border border-[var(--border)] rounded-md transition-all duration-200 flex items-center justify-center gap-2 text-[var(--muted)] hover:text-[var(--brand-primary)] text-xs sm:text-sm"
+              type="button"
             >
-              送信 <SendHorizonal className="h-4 w-4" />
+              {isPanelOpen ? (
+                <>
+                  <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span>分析オプションを閉じる</span>
+                </>
+              ) : (
+                <>
+                  <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span>分析オプションを表示</span>
+                </>
+              )}
             </button>
           </div>
-        </form>
+        </div>
+      </div>
     </div>
   );
 }

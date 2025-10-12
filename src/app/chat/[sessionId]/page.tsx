@@ -1,12 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
+import { use } from 'react';
 import { useRouter } from 'next/navigation';
+import { Award } from 'lucide-react';
 
 import { ChatInterface } from '@/components/boat/logicchat/ChatInterface';
 import IMLogicSettings from '@/components/boat/logicchat/IMLogicSettings';
-import { RaceInfoPanel } from '@/components/boat/logicchat/RaceInfoPanel';
 import {
   getMockChatSessionById,
   loadUserChatSessions,
@@ -25,26 +25,17 @@ type Step = 'settings' | 'chat';
 
 export default function ChatDetailPage({ params }: ChatDetailPageProps) {
   const router = useRouter();
+  const { sessionId } = use(params);
+  
   const [session, setSession] = useState<ChatSession | null>(null);
   const [race, setRace] = useState<BoatRaceDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [step, setStep] = useState<Step>('settings');
+  const [currentStep, setCurrentStep] = useState<Step>('settings');
   const [settings, setSettings] = useState<IMLogicSettingsData | null>(null);
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    params.then((value) => {
-      if (!cancelled) setSessionId(value.sessionId);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [params]);
 
   useEffect(() => {
     if (!sessionId) return;
+    
     const base = getMockChatSessionById(sessionId);
     if (base) {
       setSession(base);
@@ -74,22 +65,10 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
     [session],
   );
 
-  const headerContent = useMemo(() => {
-    if (!session || !race) return null;
-    return (
-      <header className="space-y-2">
-        <p className="text-xs uppercase tracking-wide text-[var(--muted)]">Boat Chat Session</p>
-        <h1 className="text-3xl font-semibold text-[var(--foreground)]">{session.raceTitle}</h1>
-        <p className="text-sm text-[var(--muted)]">{session.summary}</p>
-        <Link
-          href={`/races/${race.id}`}
-          className="text-xs font-semibold text-[var(--brand-primary)]"
-        >
-          対象レースを見る →
-        </Link>
-      </header>
-    );
-  }, [session, race]);
+  const handleSettingsComplete = async (settingsData: IMLogicSettingsData) => {
+    setSettings(settingsData);
+    setCurrentStep('chat');
+  };
 
   if (loading) {
     return (
@@ -99,7 +78,7 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
     );
   }
 
-  if (!session || !race || !sessionId) {
+  if (!session || !race) {
     return (
       <div className="bg-[var(--background)] py-16">
         <div className="mx-auto max-w-4xl rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-8 text-sm text-[var(--muted)] shadow-sm">
@@ -117,31 +96,31 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
   }
 
   return (
-    <div className="bg-[var(--background)] min-h-screen text-[var(--foreground)]">
-      <RaceInfoPanel race={race} onPanelStateChange={setIsPanelOpen} />
-
+    <div className="bg-[var(--background)] min-h-screen">
+      {/* ナビゲーションバー */}
       <div className="sticky top-[64px] z-30 bg-[var(--surface)] backdrop-blur-lg shadow-lg border-b border-[var(--border)]">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-center space-x-2">
             <button
-              onClick={() => setStep('settings')}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-all hover:bg-[var(--background)] ${
-                step === 'settings'
+              onClick={() => setCurrentStep('settings')}
+              disabled={currentStep === 'settings'}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-all ${
+                currentStep === 'settings'
                   ? 'bg-[var(--brand-primary)] text-white font-semibold'
-                  : 'text-[var(--muted)] hover:text-[var(--foreground)]'
+                  : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--background)]'
               }`}
             >
               <span className="text-sm font-medium">1. 設定</span>
             </button>
             <span className="text-[var(--muted)]">→</span>
             <button
-              onClick={() => settings && setStep('chat')}
+              onClick={() => settings && setCurrentStep('chat')}
               disabled={!settings}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-all hover:bg-[var(--background)] ${
-                step === 'chat'
+              className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-all ${
+                currentStep === 'chat'
                   ? 'bg-[var(--brand-primary)] text-white font-semibold'
                   : settings
-                    ? 'text-[var(--muted)] hover:text-[var(--foreground)]'
+                    ? 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--background)]'
                     : 'text-[#aab4c5] cursor-not-allowed'
               }`}
             >
@@ -151,37 +130,130 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className={`transition-all duration-300 ${isPanelOpen ? 'lg:mr-96' : ''}`}>
-          {headerContent && <div className="mb-8">{headerContent}</div>}
-
-          {step === 'settings' && (
-            <div className="max-w-6xl mx-auto bg-[var(--surface)] rounded-2xl shadow-xl border border-[var(--border)] p-4 sm:p-8">
-              <IMLogicSettings
-                onComplete={(value: IMLogicSettingsData) => {
-                  setSettings(value);
-                  setStep('chat');
-                }}
-              />
-            </div>
-          )}
-
-          {step === 'chat' && (
-            <div className="bg-[var(--surface)] rounded-2xl shadow-xl border border-[var(--border)] overflow-hidden">
-              <div className="h-[calc(100vh-240px)]">
-                <ChatInterface
-                  sessionId={sessionId}
-                  race={race}
-                  settings={settings}
-                  initialMessages={session.messages}
-                  onMessagesUpdate={handleMessagesUpdate}
-                  isPanelOpen={isPanelOpen}
-                />
+      {/* ステップ2: IMLogic設定 */}
+      {currentStep === 'settings' && (
+        <div className="max-w-6xl mx-auto p-4">
+          <div className="bg-[var(--surface)] rounded-2xl shadow-xl border border-[var(--border)] p-4 sm:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-[var(--foreground)] mb-2">IMLogic設定</h2>
+                <p className="text-[var(--muted)]">
+                  12項目の重み付けと、艇・選手の評価比率をカスタマイズできます
+                </p>
               </div>
             </div>
-          )}
+            
+            <IMLogicSettings onComplete={handleSettingsComplete} />
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* ステップ3: チャット分析 */}
+      {currentStep === 'chat' && (
+        <div className="w-full h-full">
+          <div className="bg-[var(--background)] h-full">
+            <div className="flex flex-col lg:flex-row h-full relative">
+              {/* メインチャットエリア - 右マージンを追加 */}
+              <div className="flex-1 flex flex-col h-full lg:mr-[450px] xl:mr-[550px] 2xl:mr-[650px]">
+                <div className="h-[calc(100vh-180px)]">
+                  <ChatInterface
+                    sessionId={sessionId}
+                    race={race}
+                    settings={settings}
+                    initialMessages={session.messages}
+                    onMessagesUpdate={handleMessagesUpdate}
+                  />
+                </div>
+              </div>
+
+              {/* 右サイド: 出走表（デスクトップのみ） - 固定配置 */}
+              <div className="hidden lg:block lg:w-[450px] xl:w-[550px] 2xl:w-[650px] lg:fixed lg:right-0 lg:top-[128px] lg:h-[calc(100vh-128px)] border-l border-[var(--border)] bg-[var(--surface)]">
+                <div className="p-4 border-b border-[var(--border)] bg-[var(--background)]">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-[var(--brand-primary)]/10 rounded-lg">
+                        <Award className="w-6 h-6 text-[var(--brand-primary)]" />
+                      </div>
+                      <div>
+                        <div className="text-lg font-bold text-[var(--foreground)]">
+                          {race.venue} {race.day}R
+                        </div>
+                        <div className="text-sm text-[var(--muted)]">{race.title}</div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-[var(--muted)]">
+                      {race.entries.length}艇立て
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="overflow-y-auto h-[calc(100%-80px)] p-4">
+                  {/* レース情報 */}
+                  <div className="mb-6">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-xs text-[var(--muted)]">天候</span>
+                        <p className="font-medium text-[var(--foreground)]">{race.weather}</p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-[var(--muted)]">風速</span>
+                        <p className="font-medium text-[var(--foreground)]">{race.windSpeed} m/s</p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-[var(--muted)]">波高</span>
+                        <p className="font-medium text-[var(--foreground)]">{race.waveHeight} cm</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* 出走表 */}
+                  <div className="bg-[var(--background)] rounded-lg overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[var(--border)] bg-[var(--background)]">
+                          <th className="text-left py-2 px-2 text-xs text-[var(--muted)]">艇</th>
+                          <th className="text-left py-2 px-2 text-xs text-[var(--muted)]">登録</th>
+                          <th className="text-left py-2 px-2 text-xs text-[var(--muted)]">選手名</th>
+                          <th className="text-left py-2 px-2 text-xs text-[var(--muted)]">支部</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {race.entries.map((entry) => {
+                          const laneColors = [
+                            'bg-white text-black',
+                            'bg-black text-white',
+                            'bg-red-600 text-white',
+                            'bg-blue-600 text-white',
+                            'bg-yellow-400 text-black',
+                            'bg-green-600 text-white',
+                          ];
+                          const color = laneColors[entry.lane - 1] || 'bg-gray-500 text-white';
+                          
+                          return (
+                            <tr
+                              key={entry.registerNumber}
+                              className="border-b border-[var(--border)] hover:bg-[var(--surface)] transition-colors"
+                            >
+                              <td className="py-2 px-2">
+                                <span className={`inline-block w-6 h-6 text-xs font-bold text-center leading-6 rounded ${color}`}>
+                                  {entry.lane}
+                                </span>
+                              </td>
+                              <td className="py-2 px-2 text-[var(--foreground)] text-xs">{entry.registerNumber}</td>
+                              <td className="py-2 px-2 text-[var(--foreground)] font-medium">{entry.racerName}</td>
+                              <td className="py-2 px-2 text-[var(--muted)] text-xs">{entry.branch}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
