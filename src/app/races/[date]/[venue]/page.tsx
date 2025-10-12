@@ -7,7 +7,6 @@ import { Calendar, ChevronLeft, MapPin, MessageSquare, Trophy, Loader2 } from 'l
 import { useSession } from 'next-auth/react';
 
 import { getGroupedRacesByDate, getRacesByDateAndVenue } from '@/data/mock/races';
-import type { ChatSession } from '@/types/chat';
 import type { BoatRaceInfo } from '@/data/mock/races';
 
 interface RaceListPageProps {
@@ -32,7 +31,7 @@ function getGradeBadgeStyle(grade: string) {
 
 export default function RaceListPage({ params }: RaceListPageProps) {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const { date, venue: rawVenue } = use(params);
   const [creatingChat, setCreatingChat] = useState<string | null>(null);
   

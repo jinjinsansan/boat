@@ -4,11 +4,21 @@
 
 import { getSession } from 'next-auth/react';
 
-const V2_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// V2 API Base URL (currently unused but may be needed for future configurations)
+// const V2_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+interface SessionCache {
+  session: {
+    user?: {
+      email?: string | null;
+    };
+  } | null;
+  timestamp: number;
+}
 
 class V2ApiClient {
   private baseUrl: string;
-  private sessionCache: { session: any; timestamp: number } | null = null;
+  private sessionCache: SessionCache | null = null;
   private readonly SESSION_CACHE_DURATION = 30000; // 30秒キャッシュ
 
   constructor() {
@@ -153,7 +163,7 @@ class V2ApiClient {
   }
 
   // チャットセッション作成
-  async createChatSession(sessionData: any) {
+  async createChatSession(sessionData: Record<string, unknown>) {
     return this.authenticatedFetch<{
       chat_id: string;
       session_id: string;
@@ -165,13 +175,13 @@ class V2ApiClient {
 
   // チャットセッション取得
   async getChatSession(sessionId: string) {
-    return this.authenticatedFetch<any>(`/api/v2/chat/session/${sessionId}`);
+    return this.authenticatedFetch<Record<string, unknown>>(`/api/v2/chat/session/${sessionId}`);
   }
 
   // チャットセッション一覧取得
   async getChatSessions(limit: number = 10, offset: number = 0) {
     return this.authenticatedFetch<{
-      sessions: any[];
+      sessions: Record<string, unknown>[];
       limit: number;
       offset: number;
       total: number;
@@ -179,9 +189,9 @@ class V2ApiClient {
   }
 
   // メッセージ送信
-  async sendMessage(sessionId: string, messageData: any) {
+  async sendMessage(sessionId: string, messageData: Record<string, unknown>) {
     return this.authenticatedFetch<{
-      message: any;
+      message: Record<string, unknown>;
     }>(`/api/v2/chat/session/${sessionId}/message`, {
       method: 'POST',
       body: JSON.stringify(messageData),

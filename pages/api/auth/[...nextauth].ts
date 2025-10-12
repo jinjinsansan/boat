@@ -3,7 +3,7 @@ import GoogleProvider from 'next-auth/providers/google'
 import { supabaseAdmin } from '../../../src/lib/supabase/server'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-export const authOptions = (req?: any): NextAuthOptions => ({
+export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -11,7 +11,7 @@ export const authOptions = (req?: any): NextAuthOptions => ({
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       // Googleログイン時にSupabaseにユーザーを作成/更新
       try {
         const { data: existingUser } = await supabaseAdmin
@@ -68,11 +68,11 @@ export const authOptions = (req?: any): NextAuthOptions => ({
       else if (new URL(url).origin === baseUrl) return url
       return baseUrl
     },
-    async session({ session, token }) {
+    async session({ session }) {
       // セッション情報をカスタマイズ
       return session
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       // JWT処理
       if (user) {
         token.id = user.id
@@ -105,8 +105,8 @@ export const authOptions = (req?: any): NextAuthOptions => ({
     }
   },
   secret: process.env.NEXTAUTH_SECRET,
-})
+}
 
-export default (req: NextApiRequest, res: NextApiResponse) => {
-  return NextAuth(req, res, authOptions(req))
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
+  return NextAuth(req, res, authOptions)
 }
