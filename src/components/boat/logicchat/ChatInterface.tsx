@@ -205,14 +205,14 @@ ${messageToSend}に対する分析結果です。
                     }
                   }}
                   placeholder="例: 全艇分析して"
-                  className="w-full px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base bg-[var(--background)] border border-[var(--border)] border-b-0 text-[var(--foreground)] rounded-tl-lg focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-transparent focus:outline-none transition-all duration-300"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base bg-[var(--background)] border border-[var(--border)] border-b-0 border-r-0 text-[var(--foreground)] rounded-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-transparent focus:outline-none transition-all duration-300"
                   disabled={sending}
                 />
               </div>
               <button
                 onClick={() => sendMessage()}
                 disabled={!inputMessage.trim() || sending}
-                className={`flex-shrink-0 p-2 sm:p-2.5 md:p-3 rounded-tr-lg border border-l-0 border-[var(--border)] border-b-0 transition-all ${
+                className={`flex-shrink-0 p-2 sm:p-2.5 md:p-3 rounded-none border border-[var(--border)] border-b-0 transition-all ${
                   !inputMessage.trim() || sending
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-[var(--brand-primary)] text-white hover:bg-[#0d4fce] active:scale-95'
@@ -225,7 +225,7 @@ ${messageToSend}に対する分析結果です。
             {/* 開閉ボタン - 入力エリアの下に配置 */}
             <button
               onClick={() => setIsPanelOpen(!isPanelOpen)}
-              className="w-full py-1.5 bg-[var(--background)] hover:bg-[var(--surface)] border border-[var(--border)] border-t-0 rounded-b-md transition-all duration-200 flex items-center justify-center gap-2 text-[var(--muted)] hover:text-[var(--brand-primary)] text-xs sm:text-sm"
+              className="w-full py-1.5 bg-[var(--background)] hover:bg-[var(--surface)] border border-[var(--border)] border-t-0 rounded-none transition-all duration-200 flex items-center justify-center gap-2 text-[var(--muted)] hover:text-[var(--brand-primary)] text-xs sm:text-sm"
               type="button"
             >
               {isPanelOpen ? (
