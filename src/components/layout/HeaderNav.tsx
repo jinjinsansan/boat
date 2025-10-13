@@ -97,7 +97,7 @@ export function HeaderNav() {
               D
             </span>
             <span className="hidden sm:inline text-xs font-semibold tracking-[0.3em] text-[#4f5d7a]">
-              競艇AI D-Logic Boat
+              競艇予想AI　D-logicBoat
             </span>
           </Link>
           <div className="flex items-center gap-3">
