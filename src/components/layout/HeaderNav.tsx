@@ -12,6 +12,7 @@ const primaryLinks = [
   { href: "#roadmap", label: "Beta Roadmap" },
   { href: "/chat", label: "チャットモック" },
   { href: "/column", label: "コラム" },
+  { href: "/expert-rooms", label: "予想家部屋" },
   { href: "/my-account", label: "マイアカウント" },
 ];
 
