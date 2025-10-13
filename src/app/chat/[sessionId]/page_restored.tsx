@@ -3,11 +3,16 @@
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { Award, ChevronUp, ChevronDown } from 'lucide-react';
 
 import { ChatInterface } from '@/components/boat/logicchat/ChatInterface';
 import IMLogicSettings from '@/components/boat/logicchat/IMLogicSettings';
+import {
+  getMockChatSessionById,
+  loadUserChatSessions,
+  upsertUserChatSession,
+} from '@/data/mock/chat';
+import { getMockRaceById } from '@/data/mock/races';
 import type { ChatSession } from '@/types/chat';
 import type { IMLogicSettingsData } from '@/types/logicchat';
 import type { BoatRaceDetail } from '@/types/race';
@@ -20,84 +25,33 @@ type Step = 'settings' | 'chat';
 
 export default function ChatDetailPage({ params }: ChatDetailPageProps) {
   const router = useRouter();
-  const { data: authSession, status } = useSession();
   const { sessionId } = use(params);
   
   const [session, setSession] = useState<ChatSession | null>(null);
   const [race, setRace] = useState<BoatRaceDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentStep, setCurrentStep] = useState<Step>('chat'); // Start at chat step
+  const [currentStep, setCurrentStep] = useState<Step>('settings');
   const [settings, setSettings] = useState<IMLogicSettingsData | null>(null);
   const [showMobileRaceTable, setShowMobileRaceTable] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
+    if (!sessionId) return;
+    
+    const base = getMockChatSessionById(sessionId);
+    if (base) {
+      setSession(base);
+      setRace(getMockRaceById(base.raceId) ?? null);
+      setLoading(false);
       return;
     }
 
-    if (status === 'authenticated' && authSession?.user?.email && sessionId) {
-      fetchChatSession();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, authSession, sessionId]);
-
-  const fetchChatSession = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v2/chat/session/${sessionId}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${authSession?.user?.email}`
-          }
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Convert backend data to expected format
-        const chatSession: ChatSession = {
-          id: data.id,
-          raceId: data.race_id,
-          raceTitle: `${data.venue} ${data.race_number}R`,
-          createdAt: data.created_at,
-          updatedAt: data.last_accessed_at,
-          summary: data.race_name,
-          messages: data.messages || []
-        };
-        
-        const raceDetail: BoatRaceDetail = {
-          id: data.race_id,
-          date: data.race_date,
-          venue: data.venue,
-          day: data.race_number,
-          title: data.race_name,
-          grade: '一般' as const,
-          weather: data.race_snapshot?.weather || '晴れ',
-          windSpeed: data.race_snapshot?.wind_speed || 0,
-          waveHeight: data.race_snapshot?.wave_height || 0,
-          aiRank: 0,
-          status: 'upcoming' as const,
-          description: '',
-          entries: [], // Will be empty for now
-          notes: []
-        };
-        
-        setSession(chatSession);
-        setRace(raceDetail);
-      } else {
-        console.error('Failed to fetch chat session');
-        router.push('/chat');
-      }
-    } catch (error) {
-      console.error('Error fetching chat session:', error);
-      router.push('/chat');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const stored = loadUserChatSessions();
+    const found = stored.find((item) => item.id === sessionId) ?? null;
+    setSession(found);
+    setRace(found ? getMockRaceById(found.raceId) ?? null : null);
+    setLoading(false);
+  }, [sessionId]);
 
   const handleMessagesUpdate = useCallback(
     (messages: ChatSession['messages']) => {
@@ -108,7 +62,7 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
         updatedAt: new Date().toISOString(),
       };
       setSession(updated);
-      // Backend will handle message persistence
+      upsertUserChatSession(updated);
     },
     [session],
   );
@@ -118,7 +72,7 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
     setCurrentStep('chat');
   };
 
-  if (status === 'loading' || loading) {
+  if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center bg-[var(--background)] text-sm text-[var(--muted)]">
         読み込み中...
