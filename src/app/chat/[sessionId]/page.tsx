@@ -26,7 +26,7 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
   const [session, setSession] = useState<ChatSession | null>(null);
   const [race, setRace] = useState<BoatRaceDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentStep, setCurrentStep] = useState<Step>('chat'); // Start at chat step
+  const [currentStep, setCurrentStep] = useState<Step>('settings');
   const [settings, setSettings] = useState<IMLogicSettingsData | null>(null);
   const [showMobileRaceTable, setShowMobileRaceTable] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
