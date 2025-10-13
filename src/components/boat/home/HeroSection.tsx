@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
 
 const heroMetrics = [
@@ -9,18 +9,15 @@ const heroMetrics = [
   { label: "対象", value: "全国競艇場対応予定", color: "bg-[#ffb347]" },
 ];
 
-const heroImages = [
-  "/hero-01.jpg",
-  "/hero-02.jpg",
-  "/hero-03.jpg",
-  "/hero-04.jpg",
-  "/hero-05.jpg",
-  "/hero-06.jpg",
+const heroVideos = [
+  "/モーターボートレース映像生成.mp4",
+  "/画像からモーターボートレース映像生成.mp4",
+  "/画像から迫力あるモーターボートレース映像生成.mp4",
 ];
 
 export function HeroSection() {
-  const imageSequence = useMemo(() => {
-    const shuffled = [...heroImages];
+  const videoSequence = useMemo(() => {
+    const shuffled = [...heroVideos];
     for (let i = shuffled.length - 1; i > 0; i -= 1) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -29,27 +26,45 @@ export function HeroSection() {
   }, []);
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
   useEffect(() => {
-    if (imageSequence.length <= 1) return undefined;
+    const currentVideo = videoRefs.current[activeIndex];
+    if (!currentVideo) return;
 
-    const intervalId = window.setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % imageSequence.length);
-    }, 2000);
+    // 現在のビデオを再生
+    currentVideo.play().catch((error) => {
+      console.error("Video autoplay failed:", error);
+    });
 
-    return () => window.clearInterval(intervalId);
-  }, [imageSequence.length]);
+    // ビデオ終了時に次のビデオへ切り替え
+    const handleEnded = () => {
+      setActiveIndex((prev) => (prev + 1) % videoSequence.length);
+    };
+
+    currentVideo.addEventListener("ended", handleEnded);
+
+    return () => {
+      currentVideo.removeEventListener("ended", handleEnded);
+    };
+  }, [activeIndex, videoSequence.length]);
 
   return (
     <section className="relative min-h-[80vh] overflow-hidden bg-[#0b1533] text-white">
       <div className="absolute inset-0">
-        {imageSequence.map((src, index) => (
-          <div
+        {videoSequence.map((src, index) => (
+          <video
             key={src}
-            className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-out ${
+            ref={(el) => {
+              videoRefs.current[index] = el;
+            }}
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-out ${
               index === activeIndex ? "opacity-100" : "opacity-0"
             }`}
-            style={{ backgroundImage: `url(${src})` }}
+            src={src}
+            muted
+            playsInline
+            preload="auto"
           />
         ))}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(16,42,67,0.45),_rgba(11,21,51,0.65))]" />
