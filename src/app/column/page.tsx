@@ -40,6 +40,7 @@ export default function ColumnListPage() {
 
   useEffect(() => {
     fetchColumns();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory]);
 
   const fetchCategories = async () => {
@@ -80,7 +81,7 @@ export default function ColumnListPage() {
     const { data, error } = await query;
     
     if (!error && data) {
-      const mappedData = data.map((item: any) => ({
+      const mappedData = data.map((item: { category?: unknown; [key: string]: unknown }) => ({
         ...item,
         category: Array.isArray(item.category) ? item.category[0] : item.category
       }));

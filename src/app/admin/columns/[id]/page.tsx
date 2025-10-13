@@ -30,6 +30,7 @@ export default function EditColumnPage() {
     checkPermission();
     fetchCategories();
     fetchColumn();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columnId]);
 
   const checkPermission = async () => {
@@ -251,7 +252,7 @@ export default function EditColumnPage() {
                   type="radio"
                   value="free"
                   checked={accessType === 'free'}
-                  onChange={(e) => setAccessType(e.target.value as any)}
+                  onChange={(e) => setAccessType(e.target.value as 'free' | 'point_required' | 'line_linked')}
                   className="mr-2"
                 />
                 無料
@@ -261,7 +262,7 @@ export default function EditColumnPage() {
                   type="radio"
                   value="point_required"
                   checked={accessType === 'point_required'}
-                  onChange={(e) => setAccessType(e.target.value as any)}
+                  onChange={(e) => setAccessType(e.target.value as 'free' | 'point_required' | 'line_linked')}
                   className="mr-2"
                 />
                 ポイント必要
@@ -271,7 +272,7 @@ export default function EditColumnPage() {
                   type="radio"
                   value="line_linked"
                   checked={accessType === 'line_linked'}
-                  onChange={(e) => setAccessType(e.target.value as any)}
+                  onChange={(e) => setAccessType(e.target.value as 'free' | 'point_required' | 'line_linked')}
                   className="mr-2"
                 />
                 LINE連携必須

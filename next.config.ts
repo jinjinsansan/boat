@@ -6,9 +6,9 @@ const nextConfig: NextConfig = {
     // .next/types の型エラーを無視
     ignoreBuildErrors: true,
   },
-  // ESLintは一時的にスキップ（コラム機能実装のため）
+  // ESLintは有効（警告のみ表示）
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
 };
 

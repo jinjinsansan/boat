@@ -26,6 +26,7 @@ export default function NewColumnPage() {
   useEffect(() => {
     checkPermission();
     fetchCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkPermission = async () => {
@@ -66,7 +67,7 @@ export default function NewColumnPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('v2_columns')
         .insert({
           title,
@@ -217,7 +218,7 @@ export default function NewColumnPage() {
                   type="radio"
                   value="free"
                   checked={accessType === 'free'}
-                  onChange={(e) => setAccessType(e.target.value as any)}
+                  onChange={(e) => setAccessType(e.target.value as 'free' | 'point_required' | 'line_linked')}
                   className="mr-2"
                 />
                 無料
@@ -227,7 +228,7 @@ export default function NewColumnPage() {
                   type="radio"
                   value="point_required"
                   checked={accessType === 'point_required'}
-                  onChange={(e) => setAccessType(e.target.value as any)}
+                  onChange={(e) => setAccessType(e.target.value as 'free' | 'point_required' | 'line_linked')}
                   className="mr-2"
                 />
                 ポイント必要
@@ -237,7 +238,7 @@ export default function NewColumnPage() {
                   type="radio"
                   value="line_linked"
                   checked={accessType === 'line_linked'}
-                  onChange={(e) => setAccessType(e.target.value as any)}
+                  onChange={(e) => setAccessType(e.target.value as 'free' | 'point_required' | 'line_linked')}
                   className="mr-2"
                 />
                 LINE連携必須

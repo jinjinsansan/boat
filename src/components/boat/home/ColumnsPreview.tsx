@@ -40,7 +40,7 @@ export function ColumnsPreview() {
       .limit(6);
 
     if (!error && data) {
-      const mappedData = data.map((item: any) => ({
+      const mappedData = data.map((item: { category?: unknown; [key: string]: unknown }) => ({
         ...item,
         category: Array.isArray(item.category) ? item.category[0] : item.category
       }));
