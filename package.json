@@ -12,6 +12,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.75.0",
     "date-fns": "^2.30.0",
+    "dayjs": "^1.11.10",
     "lucide-react": "^0.545.0",
     "nanoid": "^5.0.7",
     "next": "15.5.4",
