@@ -17,6 +17,7 @@ import {
   CheckCircle,
   AlertCircle,
   FileText,
+  MessagesSquare,
 } from "lucide-react";
 
 // 管理者メールアドレス
@@ -248,6 +249,19 @@ export default function AdminDashboard() {
                 <p className="font-semibold text-[#102a43]">コラム管理</p>
                 <p className="text-sm text-[#4f5d7a]">
                   コラム作成と編集
+                </p>
+              </div>
+            </Link>
+
+            <Link
+              href="/expert-rooms"
+              className="group flex items-center space-x-4 rounded-xl border border-[#dfe7fb] bg-[#f5f8ff] p-4 transition-all hover:border-[#0f62fe]/40 hover:bg-[#e6f0ff]"
+            >
+              <MessagesSquare className="h-8 w-8 text-[#0f62fe]" />
+              <div>
+                <p className="font-semibold text-[#102a43]">予想家部屋管理</p>
+                <p className="text-sm text-[#4f5d7a]">
+                  オープンチャット管理
                 </p>
               </div>
             </Link>
