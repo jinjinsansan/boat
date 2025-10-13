@@ -11,6 +11,7 @@ const primaryLinks = [
   { href: "#journey", label: "Data Journey" },
   { href: "#roadmap", label: "Beta Roadmap" },
   { href: "/chat", label: "チャットモック" },
+  { href: "/column", label: "コラム" },
   { href: "/my-account", label: "マイアカウント" },
 ];
 

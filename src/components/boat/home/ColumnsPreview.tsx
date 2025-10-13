@@ -1,21 +1,68 @@
-const columnCategories = [
-  {
-    title: "SG特集",
-    articles: [
-      { title: "グランドチャンピオン 進入傾向レポート", date: "2025/10/10", views: "1,204" },
-      { title: "オーシャンカップ 潮汐データ分析", date: "2025/10/09", views: "984" },
-    ],
-  },
-  {
-    title: "AI勝負レース",
-    articles: [
-      { title: "芦屋12R AIが推す本線と穴目", date: "2025/10/08", views: "832" },
-      { title: "戸田9R 進入固定戦の組み立て", date: "2025/10/07", views: "768" },
-    ],
-  },
-];
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { supabase } from '@/lib/supabase/client';
+import { format } from 'date-fns';
+import { ja } from 'date-fns/locale';
+import { FileText } from 'lucide-react';
+
+interface Column {
+  id: string;
+  title: string;
+  published_at: string;
+  view_count: number;
+  category: {
+    name: string;
+  };
+}
 
 export function ColumnsPreview() {
+  const [columns, setColumns] = useState<Column[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchColumns();
+  }, []);
+
+  const fetchColumns = async () => {
+    const { data, error } = await supabase
+      .from('v2_columns')
+      .select(`
+        id,
+        title,
+        published_at,
+        view_count,
+        category:column_categories(name)
+      `)
+      .eq('is_published', true)
+      .order('published_at', { ascending: false })
+      .limit(6);
+
+    if (!error && data) {
+      const mappedData = data.map((item: any) => ({
+        ...item,
+        category: Array.isArray(item.category) ? item.category[0] : item.category
+      }));
+      setColumns(mappedData);
+    }
+    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <section className="bg-white py-16">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6">
+          <div className="text-center text-gray-500">読み込み中...</div>
+        </div>
+      </section>
+    );
+  }
+
+  if (columns.length === 0) {
+    return null; // コラムがない場合は非表示
+  }
+
   return (
     <section className="bg-white py-16">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6">
@@ -24,41 +71,46 @@ export function ColumnsPreview() {
             Columns & Insights
           </span>
           <h2 className="text-3xl font-semibold text-[#0b1533]">
-            競艇向けの特集・AI分析レポート（モック）
+            競艇予想コラム
           </h2>
           <p className="text-sm text-[#4f5d7a]">
-            競馬版で提供中のコラムセクションと同形式で、競艇版の特集記事を公開予定です。
+            最新の競艇予想コラムをお届けします
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {columnCategories.map((category) => (
-            <div key={category.title} className="rounded-[28px] border border-[#e5ecfb] bg-[#f9fbff] p-6 shadow-[0_20px_50px_rgba(11,21,51,0.05)]">
-              <h3 className="text-lg font-semibold text-[#0b1533]">{category.title}</h3>
-              <div className="mt-4 overflow-hidden rounded-[20px] border border-white/80 bg-white">
-                <table className="w-full text-left text-sm text-[#4f5d7a]">
-                  <thead className="bg-[#eef3ff] text-xs uppercase tracking-wide text-[#6c7a99]">
-                    <tr>
-                      <th className="px-4 py-3">No.</th>
-                      <th className="px-4 py-3">タイトル</th>
-                      <th className="px-4 py-3">閲覧数</th>
-                      <th className="px-4 py-3">公開日</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {category.articles.map((article, index) => (
-                      <tr key={article.title} className="border-t border-[#eef3ff]">
-                        <td className="px-4 py-3 text-xs text-[#6c7a99]">{index + 1}</td>
-                        <td className="px-4 py-3 text-[#0b1533]">{article.title}</td>
-                        <td className="px-4 py-3">👁 {article.views}</td>
-                        <td className="px-4 py-3">{article.date}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {columns.map((column) => (
+            <Link
+              key={column.id}
+              href={`/column/${column.id}`}
+              className="group rounded-[20px] border border-[#e5ecfb] bg-[#f9fbff] p-6 shadow-[0_10px_30px_rgba(11,21,51,0.05)] transition-all hover:shadow-[0_20px_50px_rgba(11,21,51,0.12)]"
+            >
+              <div className="mb-3 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-[#3dd6d0]" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#3dd6d0]">
+                  {column.category?.name || 'コラム'}
+                </span>
               </div>
-            </div>
+              <h3 className="text-lg font-semibold text-[#0b1533] group-hover:text-[#0f62fe] transition-colors line-clamp-2 mb-3">
+                {column.title}
+              </h3>
+              <div className="flex items-center justify-between text-xs text-[#6c7a99]">
+                <span>
+                  {format(new Date(column.published_at), 'yyyy/MM/dd', { locale: ja })}
+                </span>
+                <span>👁 {column.view_count.toLocaleString()}</span>
+              </div>
+            </Link>
           ))}
+        </div>
+
+        <div className="text-center">
+          <Link
+            href="/column"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#0f62fe] text-white font-semibold rounded-full hover:bg-[#0353e9] transition-colors shadow-[0_10px_30px_rgba(15,98,254,0.25)]"
+          >
+            すべてのコラムを見る
+          </Link>
         </div>
       </div>
     </section>
