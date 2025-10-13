@@ -177,34 +177,61 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
         </div>
 
         {/* チャット表示エリア */}
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8">
-          {chatSession.messages.length === 0 ? (
-            <div className="text-center py-12">
-              <MessageSquare className="h-12 w-12 mx-auto mb-4 text-[var(--muted)]" />
-              <p className="text-[var(--muted)]">まだメッセージがありません</p>
-              <p className="text-sm text-[var(--muted)] mt-2">
-                チャット機能は開発中です
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {chatSession.messages.map((message) => (
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden">
+          {/* メッセージ表示 */}
+          <div className="p-6 space-y-4 min-h-[400px] max-h-[600px] overflow-y-auto">
+            {chatSession.messages.length === 0 ? (
+              <div className="text-center py-12">
+                <MessageSquare className="h-12 w-12 mx-auto mb-4 text-[var(--muted)]" />
+                <p className="text-[var(--muted)]">競艇レースの分析チャットへようこそ！</p>
+                <p className="text-sm text-[var(--muted)] mt-2">
+                  下のメッセージ入力欄から質問を送信してください
+                </p>
+              </div>
+            ) : (
+              chatSession.messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`p-4 rounded-lg ${
-                    message.role === 'user'
-                      ? 'bg-[var(--brand-primary)] text-white ml-auto max-w-[80%]'
-                      : 'bg-[var(--background)] text-[var(--foreground)] mr-auto max-w-[80%]'
-                  }`}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <p className="text-sm">{message.content}</p>
-                  <p className="text-xs opacity-70 mt-2">
-                    {new Date(message.created_at).toLocaleTimeString('ja-JP')}
-                  </p>
+                  <div
+                    className={`p-4 rounded-lg max-w-[80%] ${
+                      message.role === 'user'
+                        ? 'bg-[var(--brand-primary)] text-white'
+                        : 'bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)]'
+                    }`}
+                  >
+                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    <p className="text-xs opacity-70 mt-2">
+                      {new Date(message.created_at).toLocaleTimeString('ja-JP')}
+                    </p>
+                  </div>
                 </div>
-              ))}
+              ))
+            )}
+          </div>
+
+          {/* メッセージ入力欄 */}
+          <div className="border-t border-[var(--border)] bg-[var(--background)] p-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="メッセージを入力..."
+                className="flex-1 px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                disabled
+              />
+              <button
+                type="button"
+                disabled
+                className="px-6 py-2 rounded-lg bg-[var(--muted)] text-white cursor-not-allowed"
+              >
+                送信
+              </button>
             </div>
-          )}
+            <p className="text-xs text-[var(--muted)] mt-2 text-center">
+              チャット送信機能は開発中です（バックエンドAPI `/api/v2/chat/session/{'{sessionId}'}/message` 実装待ち）
+            </p>
+          </div>
         </div>
       </div>
     </div>
