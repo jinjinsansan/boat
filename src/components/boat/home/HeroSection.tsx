@@ -77,7 +77,7 @@ export function HeroSection() {
             Next Gen Boat Intelligence
           </span>
           <h1 className="text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
-            競艇AI <span className="text-[#0f62fe] drop-shadow-[0_0_25px_rgba(15,98,254,0.45)]">D-Logic Boat</span>
+            競艇予想AI　<span className="text-[#0f62fe] drop-shadow-[0_0_25px_rgba(15,98,254,0.45)]">D-logicBoat</span>
             <span className="block text-3xl font-semibold text-white/85 md:text-4xl">
               レース分析をあなたの手に
             </span>
