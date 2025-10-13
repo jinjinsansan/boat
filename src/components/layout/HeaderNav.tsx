@@ -15,6 +15,10 @@ const primaryLinks = [
   { href: "/my-account", label: "マイアカウント" },
 ];
 
+const adminLinks = [
+  { href: "/admin", label: "管理者パネル" },
+];
+
 export function HeaderNav() {
   const { data: session } = useSession();
   const user = session?.user;
