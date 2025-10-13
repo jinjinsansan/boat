@@ -33,7 +33,8 @@ export default function ChatListPage() {
     if (status === 'authenticated' && session?.user?.email) {
       fetchSessions();
     }
-  }, [status, session, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, session]);
 
   const fetchSessions = async () => {
     try {

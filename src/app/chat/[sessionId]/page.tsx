@@ -36,7 +36,19 @@ interface ChatSessionDetail {
     weather?: string;
     wind_speed?: number;
     wave_height?: number;
-    [key: string]: any;
+    horses?: string[];
+    jockeys?: string[];
+    posts?: number[];
+    horse_numbers?: number[];
+    sex_ages?: string[];
+    weights?: number[];
+    trainers?: string[];
+    odds?: number[];
+    popularities?: number[];
+    distance?: number | null;
+    course_type?: string | null;
+    track_condition?: string | null;
+    raceResults?: Record<string, unknown> | null;
   };
   user_email: string;
   messages: ChatMessage[];
@@ -60,7 +72,8 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
     if (status === 'authenticated' && session?.user?.email) {
       fetchChatSession();
     }
-  }, [status, session, sessionId, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, session, sessionId]);
 
   const fetchChatSession = async () => {
     try {
