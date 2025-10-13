@@ -1,104 +1,133 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus } from 'lucide-react';
-import { nanoid } from 'nanoid/non-secure';
+import { useSession } from 'next-auth/react';
+import { MessageSquare, Calendar, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
-import { ChatSessionList } from '@/components/boat/ChatSessionList';
-import { RaceSelector } from '@/components/boat/logicchat/RaceSelector';
-import {
-  getMockChatSessions,
-  loadUserChatSessions,
-  saveUserChatSessions,
-} from '@/data/mock/chat';
-import { getMockRaceById, getMockRaces } from '@/data/mock/races';
-import type { BoatRaceDetail } from '@/types/race';
-import type { ChatSession } from '@/types/chat';
+interface ChatSession {
+  id: string;
+  race_id: string;
+  race_date: string;
+  venue: string;
+  race_number: number;
+  race_name: string;
+  created_at: string;
+  last_accessed_at: string;
+  message_count?: number;
+}
 
-export default function ChatLobbyPage() {
+export default function ChatListPage() {
   const router = useRouter();
-  const baseSessions = useMemo(() => getMockChatSessions(), []);
-  const [userSessions, setUserSessions] = useState<ChatSession[]>([]);
-  const selectorRef = useRef<HTMLDivElement | null>(null);
-
-  const raceDetails = useMemo(() => {
-    const summaries = getMockRaces();
-    return summaries
-      .map((summary) => getMockRaceById(summary.id))
-      .filter((race): race is BoatRaceDetail => Boolean(race));
-  }, []);
+  const { data: session, status } = useSession();
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setUserSessions(loadUserChatSessions());
-  }, []);
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin');
+      return;
+    }
 
-  const sessions = useMemo(() => {
-    const map = new Map<string, ChatSession>();
-    [...userSessions, ...baseSessions].forEach((session) => {
-      map.set(session.id, session);
-    });
-    return Array.from(map.values()).sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
-  }, [userSessions, baseSessions]);
+    if (status === 'authenticated' && session?.user?.email) {
+      fetchSessions();
+    }
+  }, [status, session, router]);
 
-  const handleSelectRace = (race: BoatRaceDetail) => {
-    const now = new Date().toISOString();
-    const sessionId = `boat-${nanoid(10)}`;
-    const newSession: ChatSession = {
-      id: sessionId,
-      raceId: race.id,
-      raceTitle: `${race.venue} ${race.title}`,
-      createdAt: now,
-      updatedAt: now,
-      summary: `${race.venue}${race.day}日目 ${race.grade} の構成を分析するチャット`,
-      messages: [],
-    };
+  const fetchSessions = async () => {
+    try {
+      console.log('[Boat] チャット履歴取得開始');
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v2/chat/sessions?limit=50`,
+        {
+          headers: {
+            'Authorization': `Bearer ${session?.user?.email}`
+          }
+        }
+      );
 
-    const updated = [newSession, ...userSessions];
-    setUserSessions(updated);
-    saveUserChatSessions(updated);
-    router.push(`/chat/${sessionId}`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[Boat] チャット履歴取得成功:', data.sessions?.length);
+        setSessions(data.sessions || []);
+      } else {
+        console.error('[Boat] チャット履歴取得エラー:', response.status);
+      }
+    } catch (error) {
+      console.error('[Boat] チャット履歴取得エラー:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  if (status === 'loading' || loading) {
+    return (
+      <div className="bg-[var(--background)] min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-primary)]" />
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-[var(--background)] py-12 text-[var(--foreground)]">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
-        <header className="space-y-3">
-          <p className="text-xs uppercase tracking-wide text-[var(--muted)]">Boat Logic Chat</p>
-          <h1 className="text-3xl font-semibold text-[var(--foreground)]">レースを選択してチャットを開始</h1>
+    <div className="bg-[var(--background)] min-h-screen py-12 text-[var(--foreground)]">
+      <div className="mx-auto max-w-6xl px-6">
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">チャット履歴</h1>
           <p className="text-sm text-[var(--muted)]">
-            競馬版 UX をそのまま移植したモック環境です。レースを選ぶと固有のチャットセッション URL が生成されます。
+            過去に作成したチャットセッションの一覧です
           </p>
         </header>
 
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={() => selectorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-            className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-primary)] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#0d4fce]"
-          >
-            <Plus className="h-4 w-4" /> 新しいチャットを作成
-          </button>
-        </div>
-
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] px-6 py-4 text-sm text-[var(--muted)] shadow-sm">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-[var(--background)] px-4 py-1 text-xs font-semibold text-[var(--foreground)]">STEP 1</span>
-            <span>レースを選択してセッションを作成</span>
+        {sessions.length === 0 ? (
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-12 text-center">
+            <MessageSquare className="h-16 w-16 mx-auto mb-4 text-[var(--muted)]" />
+            <h2 className="text-xl font-semibold text-[var(--foreground)] mb-2">
+              チャット履歴がありません
+            </h2>
+            <p className="text-sm text-[var(--muted)] mb-6">
+              レース一覧からチャットを作成してください
+            </p>
+            <Link
+              href="/races"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-primary)] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#0d4fce]"
+            >
+              レース一覧へ
+            </Link>
           </div>
-        </section>
-
-        <div ref={selectorRef}>
-          <RaceSelector races={raceDetails} onSelect={handleSelectRace} />
-        </div>
-
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-[var(--foreground)]">最近のチャット履歴</h2>
-            <span className="text-xs text-[var(--muted)]">ローカルストレージに保存されています</span>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {sessions.map((chatSession) => (
+              <Link
+                key={chatSession.id}
+                href={`/chat/${chatSession.id}`}
+                className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 transition-all hover:border-[var(--brand-primary)] hover:shadow-md"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-[var(--brand-primary)]" />
+                    <h3 className="font-semibold text-[var(--foreground)]">
+                      {chatSession.venue} {chatSession.race_number}R
+                    </h3>
+                  </div>
+                </div>
+                <p className="text-sm text-[var(--muted)] mb-3">
+                  {chatSession.race_name}
+                </p>
+                <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
+                  <Calendar className="h-3 w-3" />
+                  <span>{new Date(chatSession.race_date).toLocaleDateString('ja-JP')}</span>
+                  {chatSession.message_count !== undefined && (
+                    <>
+                      <span>•</span>
+                      <span>{chatSession.message_count}件のメッセージ</span>
+                    </>
+                  )}
+                </div>
+              </Link>
+            ))}
           </div>
-          <ChatSessionList sessions={sessions} />
-        </section>
+        )}
       </div>
     </div>
   );
